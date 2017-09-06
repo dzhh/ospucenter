@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * redis工具类
  * @author zhangmingcheng
  */
 public class IRedisService<T> {
@@ -18,7 +19,7 @@ public class IRedisService<T> {
     @Resource
     protected HashOperations<String, String, T> hashOperations;
     
-    private static final String REDIS_KEY = "OSP";
+    private static final String REDIS_KEY = "OSPJWT";
 
     /**
      * 存入redis中的key
@@ -30,7 +31,7 @@ public class IRedisService<T> {
     }
 
     /**
-     * 添加
+     * 添加 将结果放入缓存，注意先后顺序（先设置值，再设置过期时间），否则过期时间不生效
      *
      * @param key    key
      * @param doamin 对象

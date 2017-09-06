@@ -24,4 +24,5 @@ public class TestController {
 	public String getAppName() {
 		return app;
 	}
+
 }

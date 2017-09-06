@@ -37,44 +37,21 @@ public class SecurityFilter implements Filter {
 	
 	static {
 		restApp.put("/user/login", 1);
-		restApp.put("/app/test", 1);
-		restApp.put("/app/getKeys", 1);
-		restApp.put("/app/get", 1);
-		restApp.put("/app/test", 1);
-		restApp.put("/app/isKeyExists", 1);
-		restApp.put("/app/getAll", 1);
 		restApp.put("/user/register", 1);
-		restApp.put("/app-name", 1);
 		restApp.put("/user/auth", 1);
-		restApp.put("/role/deleteRole", 1);
-		restApp.put("/role/addRole", 1);
-		restApp.put("/role/roleLists", 1);
-		restApp.put("/rolePermission/rolePermissionAllocation", 1);	
-		restApp.put("/user/userLists", 1);
-		restApp.put("/user/onlineUsers", 1);
-		restApp.put("/user/deleteUser", 1);
-		restApp.put("/userRole/allocationLists", 1);
-		restApp.put("/userRole/addRole2User", 1);
-		restApp.put("/userRole/selectRoleByUserId", 1);
-		restApp.put("/userRole/clearRoleByUserIds", 1);
-		restApp.put("/permission/addMenu", 1);
-		restApp.put("/permission/deleteMenu", 1);
-		restApp.put("/permission/deletePermission", 1);
-		restApp.put("/permission/permissionLists", 1);
-		restApp.put("/rolePermission/selectPermissionByRoleId", 1);
-		restApp.put("/rolePermission/clearPermissionByRoleIds", 1);	
-		restApp.put("/rolePermission/addPermission2Role", 1);		
 		
 	}
 	
 	public Integer getRestApiValue(String rest) {
+		return 1;
+		/*
 		if(restApp.containsKey(rest)) {
 			return restApp.get(rest);
 		} else if(rest.endsWith("ico")) {
 			return 1;
 		} else {
 			return 0;
-		}
+		}*/
 	}
 	
 	@Override

@@ -12,7 +12,7 @@
     <result column="status" jdbcType="INTEGER" property="status" />
   </resultMap>
   <sql id="Base_Column_List">
-    user_id, user_name, user_pwd, systemcode, create_time, last_login_time, user_email,status
+    user_id, user_name, user_pwd, systemcode, create_time, last_login_time, user_email, status
   </sql>
   <sql id="limit_sql">
   	   <if test="page_sql != null and page_sql != ''">

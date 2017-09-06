@@ -95,7 +95,7 @@ public class SysUserController {
 	public String deleteRoleById(String ucUserIds,@RequestBody Pagination<UcUser> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			Map<String, Object> data = ucUserService.deleteUserById("5");
+			Map<String, Object> data = ucUserService.deleteUserById(ucUserIds);
 			Pagination<UcUser> ucUsers = ucUserService.findPage(new HashMap<String, Object>(), pagination.getPageNo(),
 					pagination.getPageSize());
 			for (UcUser tempUcUser : ucUsers.getList()) {
