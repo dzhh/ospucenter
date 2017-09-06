@@ -14,8 +14,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.osp.ucenter.common.utils.BaseUtils;
 import com.osp.ucenter.jwt.TokenAuth;
+import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
  * 权限控制
@@ -24,6 +27,9 @@ import com.osp.ucenter.jwt.TokenAuth;
  *
  */
 public class SecurityFilter implements Filter {
+	
+	@Autowired
+	private RedisServiceImpl redisServiceImpl;
 
 	Logger logger = Logger.getLogger(SecurityFilter.class);
 
@@ -73,7 +79,8 @@ public class SecurityFilter implements Filter {
 		System.out.println("url====="+uri+"   token====="+osptoken);
 
 		// 2. 没登录，登录去
-		if(TokenAuth.hasToken(osptoken)==false) {
+		if(redisServiceImpl.isKeyExists(osptoken)) {
+			redisServiceImpl.get(osptoken).setLastActionTime(BaseUtils.getCurrentTime());//更新会话最后活动时间
 			request.getRequestDispatcher("/user/auth").forward(request, response);
 			response.setStatus(402);
 			System.out.println("没有权限======================");

@@ -1,34 +1,31 @@
 package com.osp.ucenter.redis;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * redis工具类
  * @author zhangmingcheng
  */
-public class IRedisService<T> {
+public abstract class IRedisService<T> {
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
     @Resource
     protected HashOperations<String, String, T> hashOperations;
-    
-    private static final String REDIS_KEY = "OSPJWT";
 
     /**
      * 存入redis中的key
      *
      * @return
      */
-    protected String getRedisKey(){
-    	 return IRedisService.REDIS_KEY;
-    }
+    protected abstract String getRedisKey();
 
     /**
      * 添加 将结果放入缓存，注意先后顺序（先设置值，再设置过期时间），否则过期时间不生效

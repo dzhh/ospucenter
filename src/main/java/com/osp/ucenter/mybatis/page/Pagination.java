@@ -16,8 +16,10 @@ public class Pagination<T> extends SimplePage implements java.io.Serializable, P
 	public Pagination(int pageNo, int pageSize, int totalCount) {
 		super(pageNo, pageSize, totalCount);
 	}
-    //查询时的过滤条件  
+
+	// 查询时的过滤条件
 	private String findContent;
+	private String ids;
 
 	@SuppressWarnings("unchecked")
 	public Pagination(int pageNo, int pageSize, int totalCount, @SuppressWarnings("rawtypes") List list) {
@@ -132,6 +134,14 @@ public class Pagination<T> extends SimplePage implements java.io.Serializable, P
 
 	public void setFindContent(String findContent) {
 		this.findContent = findContent;
+	}
+
+	public String getIds() {
+		return ids;
+	}
+
+	public void setIds(String ids) {
+		this.ids = ids;
 	}
 
 }

@@ -36,6 +36,9 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	@Autowired
 	private UcUserRoleMapper ucUserRoleMapper;
 
+	@Autowired
+	private RedisServiceImpl redisServiceImpl;
+
 	@Override
 	public Pagination<UserRoleAllocationBo> findUserAndRole(Map<String, Object> modelMap, Integer pageNo,
 			Integer pageSize) {
@@ -85,11 +88,11 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	}
 
 	/**
-	 * 删除用户 用户必须没有关联角色才能被删除
+	 * 删除用户 用户必须没有关联角色才能被删除,如果当前用户在线，踢出用户
 	 */
 	@Override
 	public Map<String, Object> deleteUserById(String ids) {
-		Map<String,Object> data = new HashMap<String,Object>();
+		Map<String, Object> data = new HashMap<String, Object>();
 		try {
 			int successCount = 0, errorCount = 0;
 			String resultMsg = "删除%s条，失败%s条";
@@ -100,13 +103,14 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 				idArray = new String[] { ids };
 			}
 			for (String idx : idArray) {
-				Integer userId = new Integer(idx);			
+				Integer userId = new Integer(idx);
 				List<UcUserRole> ucUserRoles = ucUserRoleMapper.findUserByUserId(userId);
 				if (null != ucUserRoles && ucUserRoles.size() > 0) {
 					errorCount += ucUserRoles.size();
 				} else {
+					shotOffOnlineUser(this.selectByPrimaryKey(userId));
 					successCount += this.deleteByPrimaryKey(new Integer(userId));
-				}		
+				}
 			}
 			// 如果有成功的，也有失败的，提示清楚。
 			if (errorCount > 0) {
@@ -163,15 +167,15 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	 * 根据用户ID删除其绑定的角色信息
 	 */
 	@Override
-	public Map<String, Object> deleteRoleByUserIds(String userIds) {	
-		
-		Map<String,Object> data = new HashMap<String,Object>();
+	public Map<String, Object> deleteRoleByUserIds(String userIds) {
+
+		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			String[] idArray = new String[]{};
-			if(StringUtils.contains(userIds, ",")){
+			String[] idArray = new String[] {};
+			if (StringUtils.contains(userIds, ",")) {
 				idArray = userIds.split(",");
-			}else{
-				idArray = new String[]{userIds};
+			} else {
+				idArray = new String[] { userIds };
 			}
 			for (String id : idArray) {
 				this.deleteByPrimaryKey(new Integer(id));
@@ -190,7 +194,7 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	}
 
 	/**
-	 * 禁止用户登录
+	 * 禁止用户登录:如果当前用户在线，踢出
 	 */
 	@Override
 	public Map<String, Object> updateForbidUserById(Integer id) {
@@ -199,16 +203,28 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 			UcUser ucuser = this.selectByPrimaryKey(id);
 			ucuser.setStatus(0);
 			updateByPrimaryKeySelective(ucuser);
-
-			// 如果当前用户在线，需要标记并且踢出
-			// customSessionManager.forbidUserById(id,status);
-
+			shotOffOnlineUser(ucuser);
 			data.put("status", 200);
 		} catch (Exception e) {
 			data.put("status", 500);
 			LoggerUtils.fmtError(getClass(), "禁止或者激活用户登录失败，id[%s],status[%s]", id, 0);
 		}
 		return data;
+	}
+
+	/**
+	 * 踢出用户
+	 */
+	@Override
+	public Map<String, Object> shotOffOnlineUser(UcUser ucUser) {
+		for (String jwtToken : redisServiceImpl.getKeys()) {
+			UcUser tempUser = redisServiceImpl.get(jwtToken);
+			if (tempUser.getUserId() == ucUser.getUserId()) {
+				redisServiceImpl.remove(jwtToken);
+				break;
+			}
+		}
+		return null;
 	}
 
 }

@@ -10,19 +10,21 @@ import com.osp.ucenter.persistence.model.UcUser;
 
 /**
  * 用户业务接口
+ * 
  * @author zhangmingcheng
  */
 public interface UcUserService {
-	
+
 	Map<String, Object> updateForbidUserById(Integer id);
-	
-	Pagination<UserRoleAllocationBo> findUserAndRole(Map<String,Object> modelMap,
-			Integer pageNo, Integer pageSize);
-	
+
+	Map<String, Object> shotOffOnlineUser(UcUser record);
+
+	Pagination<UserRoleAllocationBo> findUserAndRole(Map<String, Object> modelMap, Integer pageNo, Integer pageSize);
+
 	Pagination<UcUser> findPage(Map<String, Object> resultMap, Integer pageNo, Integer pageSize);
-	
-	UcUser login(String username ,String password);
-	
+
+	UcUser login(String username, String password);
+
 	int deleteByPrimaryKey(Integer id);
 
 	int insert(UcUser record);
@@ -31,18 +33,18 @@ public interface UcUserService {
 
 	UcUser selectByPrimaryKey(Integer id);
 
-    int updateByPrimaryKeySelective(UcUser record);
+	int updateByPrimaryKeySelective(UcUser record);
 
-    int updateByPrimaryKey(UcUser record);
+	int updateByPrimaryKey(UcUser record);
 
-    UcUser findUser(Integer userId);
+	UcUser findUser(Integer userId);
 
-	Map<String, Object> deleteUserById(String ids);
-	
 	List<UcRoleBo> selectRoleByUserId(Integer id);
 
 	Map<String, Object> addRole2User(Integer userId, String ids);
 
 	Map<String, Object> deleteRoleByUserIds(String userIds);
-	
+
+	Map<String, Object> deleteUserById(String ids);
+
 }

@@ -3,10 +3,8 @@ package com.osp.ucenter.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.DisabledAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
@@ -17,17 +15,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
+import com.osp.ucenter.common.utils.BaseUtils;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.jwt.JwtHelper;
-import com.osp.ucenter.jwt.TokenAuth;
 import com.osp.ucenter.manager.UserManager;
+import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.service.UcUserService;
+import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
  * 用户登录注册
@@ -37,10 +36,13 @@ import com.osp.ucenter.service.UcUserService;
 @Controller
 @Scope(value = "prototype")
 @RequestMapping(value = "/user")
-public class LoginController{
+public class LoginController {
 
 	@Autowired
 	UcUserService ucUserService;
+
+	@Autowired
+	private RedisServiceImpl redisServiceImpl;
 
 	@ResponseBody
 	@RequestMapping(value = "/login", method = { RequestMethod.GET, RequestMethod.POST })
@@ -55,33 +57,24 @@ public class LoginController{
 			currentUser.login(token);
 			// currentUser.hasRole("admin");
 			// 获取 菜单
-
-			UcUser ucUser = TokenAuth.getAuthUser(username);
+			UcUser ucUser = (UcUser) currentUser.getPrincipal();
 			if (ucUser != null) {
-				ucUser.setUserPwd("");
-				// 拼装accessToken MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
-				String accessToken = JwtHelper.createJWT(username, 1800 * 1000);
-				//暂存jwtToken信息，不存签名部分
-				ucUser.setJwtToken(accessToken.substring(0, accessToken.lastIndexOf('.')));
-				TokenAuth.add(accessToken, ucUser);
+				JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
+				ro.setToken(jwtUserBean.getJwtToken());
 				ro.setOspState(200);
-				ro.setToken(accessToken);
 				data.put("ucUser", ucUser);
 				ro.setData(data);
-				TokenAuth.removeAuthUser(username);
-			}else{
-				ro.setOspState(500);
 			}
 			return JsonUtil.beanToJson(ro);
 		} catch (DisabledAccountException e) {
 			ro.setOspState(500);
 			return JsonUtil.beanToJson(ro);
+		} catch (AccountException e) {
+			ro.setOspState(500);
+			e.printStackTrace();
+			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
-			return JsonUtil.beanToJson(ro);
-		} catch (AuthenticationException e) {
-			ro.setOspState(401);
-			e.printStackTrace();
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
@@ -92,34 +85,74 @@ public class LoginController{
 
 	@ResponseBody
 	@RequestMapping(value = "/register")
-	public Map<String, Object> register(HttpServletRequest request, RedirectAttributes attr) {
-		HashMap<String, Object> resultMap = new HashMap<>();
-		resultMap.put("status", 400);
-		UcUser ucUser = new UcUser();
-		ucUser.setUserName("test111");
-		ucUser.setUserPwd("123456");
-		ucUser.setUserEmail("124973@qq.com");
-		ucUser = UserManager.md5Pswd(ucUser);
-
-		UcUser user = ucUserService.findUser(ucUser.getUserId());
-		if (null != user) {
-			resultMap.put("message", "帐号已经存在！");
-			return resultMap;
+	public String register(@RequestBody UcUser user) {
+		ResponseObject ro = ResponseObject.getInstance();
+		HashMap<String, Object> data = new HashMap<String, Object>();
+		try {
+			UcUser tempUser = ucUserService.findUser(user.getUserId());
+			if (null != tempUser) {
+				data.put("ucUser", "帐号已经存在！");
+				ro.setOspState(500);
+				ro.setData(data);
+				return JsonUtil.beanToJson(ro);
+			}
+			int count = ucUserService.insert(user);
+			if (count > 0) {
+				LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", user.toString());
+				Subject currentUser = SecurityUtils.getSubject();
+				UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getUserPwd());
+				currentUser.login(token);
+				// currentUser.hasRole("admin");
+				// 获取 菜单
+				UcUser ucUser = (UcUser) currentUser.getPrincipal();
+				if (ucUser != null) {
+					JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
+					ro.setOspState(200);
+					ro.setToken(jwtUserBean.getJwtToken());
+					data.put("ucUser", ucUser);
+					ro.setData(data);
+				}
+			} else {
+				ro.setOspState(500);
+			}
+			return JsonUtil.beanToJson(ro);
+		} catch (DisabledAccountException e) {
+			ro.setOspState(500);
+			return JsonUtil.beanToJson(ro);
+		} catch (AccountException e) {
+			ro.setOspState(500);
+			e.printStackTrace();
+			return JsonUtil.beanToJson(ro);
+		} catch (MyRuntimeException e) {
+			ro.setOspState(400);
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(402);
+			e.printStackTrace();
+			return JsonUtil.beanToJson(ro);
 		}
-		int count = ucUserService.insert(ucUser);
-		LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", ucUser.toString());
-		Subject currentUser = SecurityUtils.getSubject();
-		UsernamePasswordToken token = new UsernamePasswordToken(ucUser.getUserName(), ucUser.getUserPwd());
-		currentUser.login(token);
-		LoggerUtils.fmtDebug(getClass(), "注册后，登录完毕！", ucUser.toString());
-		resultMap.put("message", "注册成功！");
-		resultMap.put("successCount", count);
-		resultMap.put("status", 200);
-		return resultMap;
+	}
+
+	/**
+	 * 组织JWTUserBean，并将JWTUserBean写入到redis里面
+	 * 
+	 * @param ucUser
+	 * @return
+	 */
+	public JWTUserBean organizeJWTUserBean(UcUser ucUser) throws Exception {
+		// 过期时间 1小时
+		long expire = 3600;
+		// 拼装accessToken MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
+		String accessToken = JwtHelper.createJWT(ucUser.getUserName(), expire * 1000);
+		JWTUserBean jwtUserBean = new JWTUserBean(ucUser);
+		jwtUserBean.setCreateTime(BaseUtils.getCurrentTime());
+		jwtUserBean.setJwtToken(accessToken);
+		redisServiceImpl.put(accessToken, jwtUserBean, expire);
+		return jwtUserBean;
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/auth",  method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/auth", method = { RequestMethod.GET, RequestMethod.POST })
 	public String noauth() {
 		ResponseObject ro = ResponseObject.getInstance();
 		ro.setOspState(402);

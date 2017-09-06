@@ -15,10 +15,7 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.osp.ucenter.common.utils.BaseUtils;
-import com.osp.ucenter.jwt.JwtHelper;
-import com.osp.ucenter.jwt.TokenAuth;
 import com.osp.ucenter.persistence.model.UcUser;
-import com.osp.ucenter.redis.IRedisService;
 import com.osp.ucenter.service.UcUserService;
 
 /**
@@ -51,18 +48,8 @@ public class OspAuthorizingRealm extends AuthorizingRealm {
 		} else {
 			// 登陆成功 更新最后一次登录时间
 			user.setLastLoginTime(BaseUtils.getCurrentTime());
-			ucUserService.updateByPrimaryKeySelective(user);
-			user.setUserPwd("");
-			// 拼装accessToken MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
-			long expire = 1800;
-			String accessToken = JwtHelper.createJWT(username, expire * 1000);
-			// 暂存jwtToken信息，不存签名部分
-			user.setJwtToken(accessToken.substring(0, accessToken.lastIndexOf('.')));
-			IRedisService<UcUser> redisService = new IRedisService<UcUser>();
-			redisService.put(accessToken, user, expire);
+			ucUserService.updateByPrimaryKeySelective(user);		
 		}
-		TokenAuth.addUser(user.getUserId(), user);
-		TokenAuth.addAuthUser(username, user);
 		return new SimpleAuthenticationInfo(user, user.getUserPwd(), getName());
 	}
 

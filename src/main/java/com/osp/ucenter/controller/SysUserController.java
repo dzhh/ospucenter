@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -19,8 +21,10 @@ import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.jwt.TokenAuth;
 import com.osp.ucenter.manager.UserManager;
 import com.osp.ucenter.mybatis.page.Pagination;
+import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.service.UcUserService;
+import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
  * 用户管理
@@ -34,6 +38,12 @@ public class SysUserController {
 	@Autowired
 	UcUserService ucUserService;
 
+	@Autowired
+	private RedisServiceImpl redisServiceImpl;
+
+	@Autowired
+	private HttpServletRequest request;
+
 	/**
 	 * 禁止登陆
 	 * 
@@ -41,11 +51,12 @@ public class SysUserController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/forbidUserById", method = { RequestMethod.GET, RequestMethod.POST })
-	public String forbidUserById(String userId) {
+	public String forbidUserById() {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			Map<String, Object> data = ucUserService.updateForbidUserById(Integer.valueOf(userId));
-			ro.setOspState((Integer)data.get("status"));
+			UcUser ucUser = redisServiceImpl.get(request.getHeader("token"));
+			Map<String, Object> data = ucUserService.updateForbidUserById(ucUser.getUserId());
+			ro.setOspState((Integer) data.get("status"));
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(500);
@@ -92,10 +103,10 @@ public class SysUserController {
 	 */
 	@RequestMapping(value = "/deleteUser", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String deleteRoleById(String ucUserIds,@RequestBody Pagination<UcUser> pagination) {
+	public String deleteRoleById(@RequestBody Pagination<UcUser> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			Map<String, Object> data = ucUserService.deleteUserById(ucUserIds);
+			Map<String, Object> data = ucUserService.deleteUserById(pagination.getIds());
 			Pagination<UcUser> ucUsers = ucUserService.findPage(new HashMap<String, Object>(), pagination.getPageNo(),
 					pagination.getPageSize());
 			for (UcUser tempUcUser : ucUsers.getList()) {
@@ -105,7 +116,7 @@ public class SysUserController {
 			ro.setOspState(200);
 			ro.setData(data);
 			return JsonUtil.beanToJson(ro);
-		}  catch (Exception e) {
+		} catch (Exception e) {
 			ro.setOspState(500);
 			return JsonUtil.beanToJson(ro);
 		}
@@ -118,18 +129,24 @@ public class SysUserController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/onlineUsers", method = { RequestMethod.GET, RequestMethod.POST })
-	public String onlineUsers(@RequestBody Pagination<UcUser> pagination) {
+	public String onlineUsers(@RequestBody Pagination<JWTUserBean> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			pagination.setTotalCount(TokenAuth.jwtTokens.size());
+			pagination.setTotalCount((int)redisServiceImpl.count());
 			int start = (pagination.getPageNo() - 1) * pagination.getPageSize();
 			int end = start + pagination.getPageSize();
 			int i = 0;
-			List<UcUser> lists = new ArrayList<>();
-			for (String jwtToken : TokenAuth.jwtTokens.keySet()) {
+			List<JWTUserBean> lists = new ArrayList<>();
+			for (String jwtToken : redisServiceImpl.getKeys()) {
 				if (i >= start && i < end) {
-					lists.add(TokenAuth.jwtTokens.get(jwtToken));
+					JWTUserBean jwtUserBean = redisServiceImpl.get(jwtToken);
+					// 暂存jwtToken信息，不存签名部分
+					jwtUserBean.setJwtToken(jwtToken.substring(0, jwtToken.lastIndexOf('.')));
+					lists.add(jwtUserBean);
+				    i++;
+				}else{
+					break;
 				}
 			}
 			pagination.setList(lists);
@@ -141,7 +158,7 @@ public class SysUserController {
 			ro.setOspState(400);
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
-			ro.setOspState(402);
+			ro.setOspState(500);
 			e.printStackTrace();
 			return JsonUtil.beanToJson(ro);
 		}
@@ -162,11 +179,10 @@ public class SysUserController {
 			int status = ucUserService.updateByPrimaryKeySelective(user);
 			if (status > 0) {
 				UcUser ucUser = ucUserService.findUser(user.getUserId());
-				TokenAuth.updateUser(user.getUserId(), ucUser);// 用户信息修改，维护全局map
+				redisServiceImpl.put(request.getHeader("token"), new JWTUserBean(ucUser), 3600);//维护用户信息
+				data.put("ucUser", ucUser);
 			}
 			ro.setOspState(200);
-			UcUser ucUser = TokenAuth.getUser(user.getUserId());
-			data.put("ucUser", ucUser);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -179,7 +195,7 @@ public class SysUserController {
 	}
 
 	/**
-	 * 修改用户密码
+	 * 修改用户密码:前台需要传递参数 userId username userPsw userNewPsw
 	 * 
 	 * @param user
 	 * @return
@@ -201,7 +217,7 @@ public class SysUserController {
 			int status = ucUserService.updateByPrimaryKeySelective(user);
 			if (status > 0) {
 				UcUser ucUser = ucUserService.findUser(user.getUserId());
-				TokenAuth.updateUser(user.getUserId(), ucUser);// 用户信息修改，维护全局map
+				redisServiceImpl.put(request.getHeader("token"), new JWTUserBean(ucUser), 3600);//维护用户信息
 			}
 			ro.setOspState(200);
 			UcUser ucUser = TokenAuth.getUser(user.getUserId());
@@ -225,12 +241,11 @@ public class SysUserController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/userInfo", method = { RequestMethod.GET, RequestMethod.POST })
-	public String userInfo(@RequestBody UcUser user) {
+	public String userInfo() {
 		ResponseObject ro = ResponseObject.getInstance();
 		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			int userId = user.getUserId();
-			UcUser ucUser = TokenAuth.getUser(userId);
+			UcUser ucUser = redisServiceImpl.get(request.getHeader("token"));
 			data.put("ucUser", ucUser);
 			ro.setOspState(200);
 			ro.setData(data);
@@ -239,7 +254,7 @@ public class SysUserController {
 			ro.setOspState(400);
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
-			ro.setOspState(402);
+			ro.setOspState(500);
 			e.printStackTrace();
 			return JsonUtil.beanToJson(ro);
 		}
