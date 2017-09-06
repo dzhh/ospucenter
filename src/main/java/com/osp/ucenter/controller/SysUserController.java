@@ -51,10 +51,9 @@ public class SysUserController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/forbidUserById", method = { RequestMethod.GET, RequestMethod.POST })
-	public String forbidUserById() {
+	public String forbidUserById(@RequestBody UcUser ucUser) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			UcUser ucUser = redisServiceImpl.get(request.getHeader("token"));
 			Map<String, Object> data = ucUserService.updateForbidUserById(ucUser.getUserId());
 			ro.setOspState((Integer) data.get("status"));
 			return JsonUtil.beanToJson(ro);

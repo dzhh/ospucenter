@@ -96,6 +96,7 @@ public class LoginController {
 				ro.setData(data);
 				return JsonUtil.beanToJson(ro);
 			}
+			user = UserManager.md5Pswd(user);
 			int count = ucUserService.insert(user);
 			if (count > 0) {
 				LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", user.toString());

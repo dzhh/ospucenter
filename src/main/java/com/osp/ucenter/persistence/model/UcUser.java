@@ -16,7 +16,6 @@ public class UcUser implements Serializable {
 	private String lastLoginTime;
 	private String userEmail;
 	private String newPwd;
-	private String jwtToken;
 	private Integer status;
 
 	public void setNewPwd(String newPwd) {
@@ -200,14 +199,6 @@ public class UcUser implements Serializable {
 	 */
 	public void setUserEmail(String userEmail) {
 		this.userEmail = userEmail == null ? null : userEmail.trim();
-	}
-
-	public String getJwtToken() {
-		return jwtToken;
-	}
-
-	public void setJwtToken(String jwtToken) {
-		this.jwtToken = jwtToken;
 	}
 
 	public Integer getStatus() {

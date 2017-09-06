@@ -12,6 +12,7 @@ import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.common.utils.StringUtils;
 import com.osp.ucenter.mybatis.BaseMybatisDao;
 import com.osp.ucenter.mybatis.page.Pagination;
+import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.bo.UcRoleBo;
 import com.osp.ucenter.persistence.bo.UserRoleAllocationBo;
 import com.osp.ucenter.persistence.dao.UcUserMapper;
@@ -218,7 +219,7 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	@Override
 	public Map<String, Object> shotOffOnlineUser(UcUser ucUser) {
 		for (String jwtToken : redisServiceImpl.getKeys()) {
-			UcUser tempUser = redisServiceImpl.get(jwtToken);
+			JWTUserBean tempUser = redisServiceImpl.get(jwtToken);
 			if (tempUser.getUserId() == ucUser.getUserId()) {
 				redisServiceImpl.remove(jwtToken);
 				break;
