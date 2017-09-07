@@ -45,6 +45,52 @@ public class SysUserController {
 	private HttpServletRequest request;
 
 	/**
+	 * 踢出在线用户 前台需传递参数Pagination.ids 
+	 * 
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/shotOffOnlineUser", method = { RequestMethod.GET, RequestMethod.POST })
+	public String shotOffOnlineUser(@RequestBody Pagination<JWTUserBean> pagination) {
+		ResponseObject ro = ResponseObject.getInstance();
+		Map<String, Object> data = new HashMap<String, Object>();
+		try {
+			UcUser ucUser = ucUserService.selectByPrimaryKey(Integer.parseInt(pagination.getIds()));
+			ucUserService.shotOffOnlineUser(ucUser);
+			pagination.setTotalCount((int)redisServiceImpl.count());
+			int start = (pagination.getPageNo() - 1) * pagination.getPageSize();
+			int end = start + pagination.getPageSize();
+			int i = 0;
+			List<JWTUserBean> lists = new ArrayList<>();
+			for (String jwtToken : redisServiceImpl.getKeys()) {
+				if (i >= start && i < end) {
+					Object jwtUser= redisServiceImpl.get(jwtToken);
+					JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
+					// 暂存jwtToken信息，不存签名部分
+					jwtUserBean.setJwtToken(jwtToken.substring(0, jwtToken.lastIndexOf('.')));
+					lists.add(jwtUserBean);
+				    i++;
+				}else{
+					break;
+				}
+			}
+			pagination.setList(lists);
+			data.put("ucUser", pagination.getList());
+			ro.setOspState(200);
+			ro.setData(data);
+			return JsonUtil.beanToJson(ro);
+		} catch (MyRuntimeException e) {
+			ro.setOspState(400);
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(500);
+			e.printStackTrace();
+			return JsonUtil.beanToJson(ro);
+		}
+	}
+	
+	
+	/**
 	 * 禁止登陆 前台需要传递参数  Pagination.ids 
 	 * 
 	 * @return
