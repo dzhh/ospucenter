@@ -37,7 +37,6 @@ import com.osp.ucenter.service.impl.RedisServiceImpl;
 @Scope(value = "prototype")
 @RequestMapping(value = "/user")
 public class LoginController {
-
 	@Autowired
 	UcUserService ucUserService;
 

@@ -139,7 +139,8 @@ public class SysUserController {
 			List<JWTUserBean> lists = new ArrayList<>();
 			for (String jwtToken : redisServiceImpl.getKeys()) {
 				if (i >= start && i < end) {
-					JWTUserBean jwtUserBean = redisServiceImpl.get(jwtToken);
+					Object jwtUser= redisServiceImpl.get(jwtToken);
+					JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
 					// 暂存jwtToken信息，不存签名部分
 					jwtUserBean.setJwtToken(jwtToken.substring(0, jwtToken.lastIndexOf('.')));
 					lists.add(jwtUserBean);
@@ -244,7 +245,8 @@ public class SysUserController {
 		ResponseObject ro = ResponseObject.getInstance();
 		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			UcUser ucUser = redisServiceImpl.get(request.getHeader("token"));
+			Object jwtUser= redisServiceImpl.get(request.getHeader("token"));
+			JWTUserBean ucUser = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
 			data.put("ucUser", ucUser);
 			ro.setOspState(200);
 			ro.setData(data);

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.common.utils.StringUtils;
 import com.osp.ucenter.mybatis.BaseMybatisDao;
@@ -219,7 +220,8 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	@Override
 	public Map<String, Object> shotOffOnlineUser(UcUser ucUser) {
 		for (String jwtToken : redisServiceImpl.getKeys()) {
-			JWTUserBean tempUser = redisServiceImpl.get(jwtToken);
+			Object jwtUser= redisServiceImpl.get(jwtToken);
+			JWTUserBean tempUser = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
 			if (tempUser.getUserId() == ucUser.getUserId()) {
 				redisServiceImpl.remove(jwtToken);
 				break;
