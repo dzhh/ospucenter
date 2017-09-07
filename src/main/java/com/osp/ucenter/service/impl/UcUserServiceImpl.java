@@ -199,11 +199,11 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	 * 禁止用户登录:如果当前用户在线，踢出
 	 */
 	@Override
-	public Map<String, Object> updateForbidUserById(Integer id) {
+	public Map<String, Object> updateForbidUserById(Integer id,Integer status) {
 		Map<String, Object> data = new HashMap<String, Object>();
 		try {
 			UcUser ucuser = this.selectByPrimaryKey(id);
-			ucuser.setStatus(0);
+			ucuser.setStatus(status);
 			updateByPrimaryKeySelective(ucuser);
 			shotOffOnlineUser(ucuser);
 			data.put("status", 200);

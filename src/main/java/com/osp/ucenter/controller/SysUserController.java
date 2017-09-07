@@ -45,17 +45,50 @@ public class SysUserController {
 	private HttpServletRequest request;
 
 	/**
-	 * 禁止登陆
+	 * 禁止登陆 前台需要传递参数  Pagination.ids 
 	 * 
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/forbidUserById", method = { RequestMethod.GET, RequestMethod.POST })
-	public String forbidUserById(@RequestBody UcUser ucUser) {
+	public String forbidUserById(@RequestBody Pagination<UcUser> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			Map<String, Object> data = ucUserService.updateForbidUserById(ucUser.getUserId());
+			Map<String, Object> data = ucUserService.updateForbidUserById(Integer.parseInt(pagination.getIds()),0);
 			ro.setOspState((Integer) data.get("status"));
+			Pagination<UcUser> ucUsers = ucUserService.findPage(new HashMap<String, Object>(), pagination.getPageNo(),
+					pagination.getPageSize());
+			for (UcUser tempUcUser : ucUsers.getList()) {
+				tempUcUser.setUserPwd("");
+			}
+			data.put("ucUser", ucUsers.getList());
+			ro.setData(data);
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(500);
+			return JsonUtil.beanToJson(ro);
+		}
+	}
+	
+	/**
+	 * 激活登陆 前台需要传递参数  Pagination.ids 
+	 * 
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/forbidUserById", method = { RequestMethod.GET, RequestMethod.POST })
+	public String activeUserById(@RequestBody Pagination<UcUser> pagination) {
+		ResponseObject ro = ResponseObject.getInstance();
+		try {
+			Map<String, Object> data = ucUserService.updateForbidUserById(Integer.parseInt(pagination.getIds()),1);
+			ro.setOspState((Integer) data.get("status"));
+			Pagination<UcUser> ucUsers = ucUserService.findPage(new HashMap<String, Object>(), pagination.getPageNo(),
+					pagination.getPageSize());
+			for (UcUser tempUcUser : ucUsers.getList()) {
+				tempUcUser.setUserPwd("");
+			}
+			data.put("ucUser", ucUsers.getList());
+			ro.setData(data);
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(500);

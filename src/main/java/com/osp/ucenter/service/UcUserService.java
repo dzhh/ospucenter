@@ -15,7 +15,7 @@ import com.osp.ucenter.persistence.model.UcUser;
  */
 public interface UcUserService {
 
-	Map<String, Object> updateForbidUserById(Integer id);
+	Map<String, Object> updateForbidUserById(Integer id,Integer status);
 
 	Map<String, Object> shotOffOnlineUser(UcUser record);
 
