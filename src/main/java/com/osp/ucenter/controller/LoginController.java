@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
-import com.osp.ucenter.common.utils.BaseUtils;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.jwt.JwtHelper;
 import com.osp.ucenter.manager.UserManager;
@@ -145,7 +144,7 @@ public class LoginController {
 		// 拼装accessToken MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
 		String accessToken = JwtHelper.createJWT(ucUser.getUserName(), expire * 1000);
 		JWTUserBean jwtUserBean = new JWTUserBean(ucUser);
-		jwtUserBean.setCreateTime(BaseUtils.getCurrentTime());
+		jwtUserBean.setCreateJWTTime(ucUser.getLastLoginTime());
 		jwtUserBean.setJwtToken(accessToken);
 		redisServiceImpl.put(accessToken, jwtUserBean, expire);
 		return jwtUserBean;

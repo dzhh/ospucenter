@@ -222,7 +222,7 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 		for (String jwtToken : redisServiceImpl.getKeys()) {
 			Object jwtUser= redisServiceImpl.get(jwtToken);
 			JWTUserBean tempUser = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
-			if (tempUser.getUserId() == ucUser.getUserId()) {
+			if (tempUser.getLastLoginTime().equals(ucUser.getLastLoginTime())){
 				redisServiceImpl.remove(jwtToken);
 				break;
 			}

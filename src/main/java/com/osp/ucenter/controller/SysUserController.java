@@ -122,7 +122,7 @@ public class SysUserController {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/forbidUserById", method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/activeUserById", method = { RequestMethod.GET, RequestMethod.POST })
 	public String activeUserById(@RequestBody Pagination<UcUser> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {

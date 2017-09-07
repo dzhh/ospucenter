@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
 import com.osp.ucenter.filter.CrossDomainFilter;
 import com.osp.ucenter.filter.Initfilter;
@@ -63,11 +64,16 @@ public class UcenterMain {
 	@Bean
 	public FilterRegistrationBean securityFilter() {
 		FilterRegistrationBean registration = new FilterRegistrationBean();
-		registration.setFilter(new SecurityFilter());
+		registration.setFilter(new DelegatingFilterProxy("SecurityFilter"));
+		registration.addInitParameter("targetFilterLifecycle", "true");
 		registration.addUrlPatterns("/*");
-		registration.setName("SecurityFilter");
 		registration.setOrder(102);
 		return registration;
 	}
-
+	
+	@Bean(name = "SecurityFilter")
+	public SecurityFilter getSecurityFilter(){
+		return new SecurityFilter();
+	}
+	 
 }

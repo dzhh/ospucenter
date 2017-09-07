@@ -12,14 +12,14 @@ public class JWTUserBean extends UcUser {
 	 */
 	private static final long serialVersionUID = 1L;
 	private String jwtToken;
-	private String createTime;
+	private String createJWTTime;
 	private String lastActionTime;
- 
-	public JWTUserBean(){
+
+	public JWTUserBean() {
 		super();
 	}
-	
-	public JWTUserBean(UcUser ucUser){
+
+	public JWTUserBean(UcUser ucUser) {
 		this.setUserId(ucUser.getUserId());
 		this.setUserName(ucUser.getUserName());
 		this.setUserEmail(ucUser.getUserEmail());
@@ -28,7 +28,7 @@ public class JWTUserBean extends UcUser {
 		this.setSystemcode(ucUser.getSystemcode());
 		this.setCreateTime(ucUser.getCreateTime());
 	}
-	
+
 	public String getJwtToken() {
 		return jwtToken;
 	}
@@ -37,19 +37,19 @@ public class JWTUserBean extends UcUser {
 		this.jwtToken = jwtToken;
 	}
 
-	public String getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(String createTime) {
-		this.createTime = createTime;
-	}
-
 	public String getLastActionTime() {
 		return lastActionTime;
 	}
 
 	public void setLastActionTime(String lastActionTime) {
 		this.lastActionTime = lastActionTime;
+	}
+
+	public String getCreateJWTTime() {
+		return createJWTTime;
+	}
+
+	public void setCreateJWTTime(String createJWTTime) {
+		this.createJWTTime = createJWTTime;
 	}
 }

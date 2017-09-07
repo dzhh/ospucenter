@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.utils.BaseUtils;
-import com.osp.ucenter.jwt.TokenAuth;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.service.impl.RedisServiceImpl;
 
@@ -76,8 +75,6 @@ public class SecurityFilter implements Filter {
 		}
 		// 1. 检查用户是否已登录 Tocken JWT
 		String osptoken = request.getHeader("token");
-		System.out.println("url====="+uri+"   token====="+osptoken);
-
 		// 2. 没登录，登录去
 		if(redisServiceImpl.isKeyExists(osptoken)==false) {
 			request.getRequestDispatcher("/user/auth").forward(request, response);
