@@ -18,23 +18,34 @@ public interface UcPermissionService {
 	
 	Map<String, Object> deleteByMenuIds(String menuIds);
 
-    UcPermission selectByPrimaryKey(Integer id);
-
     int updateByPrimaryKeySelective(UcPermission record);
 
     int updateByPrimaryKey(UcPermission record);
 
 	Map<String, Object> deletePermissionById(String ids);
-	
-	List<UcPermissionMenuActionBo> selectPermissions();
-	
-	List<UcPermissionBo> selectPermissionByRoleId(Integer id);
-	
-	List<UcPermission> selectPermissionById(Integer id);
 
 	Map<String, Object> addPermission2Role(Integer roleId,String ids);
 
 	Map<String, Object> deleteByRids(String roleIds);
 	//根据用户ID查询权限（permission），放入到Authorization里。
 	Set<String> findPermissionByUserId(Integer userId);
+	//增
+	
+	//删
+	
+	//改
+	
+	//查
+	UcPermission selectByPrimaryKey(Integer id);
+	
+    List<UcPermissionMenuActionBo> selectPermissions();
+	
+	List<UcPermissionBo> selectPermissionByRoleId(Integer id);
+	
+	List<UcPermission> selectPermissionById(Integer id);
+	
+	List<UcMenu> selectMenus();
+	
+	
+	
 }

@@ -1,8 +1,5 @@
 package com.osp.ucenter.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.DisabledAccountException;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.osp.common.json.JsonUtil;
-import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.jwt.JwtHelper;
@@ -46,7 +42,6 @@ public class LoginController {
 	@RequestMapping(value = "/login", method = { RequestMethod.GET, RequestMethod.POST })
 	public String login(@RequestBody UcUser user) {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> data = new HashMap<String, Object>();
 		try {
 			String username = user.getUserName();
 			String password = user.getUserPwd();
@@ -60,22 +55,20 @@ public class LoginController {
 				JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
 				ro.setToken(jwtUserBean.getJwtToken());
 				ro.setOspState(200);
-				data.put("ucUser", ucUser);
-				ro.setData(data);
+				ro.setValue("ucUser", ucUser);
 			}
 			return JsonUtil.beanToJson(ro);
 		} catch (DisabledAccountException e) {
-			ro.setOspState(500);
+			ro.setOspState(403);
+			ro.setValue("msg", "帐号已经禁止登录！");
 			return JsonUtil.beanToJson(ro);
 		} catch (AccountException e) {
-			ro.setOspState(500);
-			e.printStackTrace();
-			return JsonUtil.beanToJson(ro);
-		} catch (MyRuntimeException e) {
-			ro.setOspState(400);
+			ro.setOspState(401);
+			ro.setValue("msg", "帐号或密码不正确！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
-			ro.setOspState(402);
+			ro.setOspState(500);
+			ro.setValue("msg", "服务器异常，登陆失败！");
 			e.printStackTrace();
 			return JsonUtil.beanToJson(ro);
 		}
@@ -85,13 +78,11 @@ public class LoginController {
 	@RequestMapping(value = "/register")
 	public String register(@RequestBody UcUser user) {
 		ResponseObject ro = ResponseObject.getInstance();
-		HashMap<String, Object> data = new HashMap<String, Object>();
 		try {
 			UcUser tempUser = ucUserService.findUser(user.getUserId());
 			if (null != tempUser) {
-				data.put("ucUser", "帐号已经存在！");
+				ro.setValue("msg", "此帐号已经存在,注册失败！");
 				ro.setOspState(500);
-				ro.setData(data);
 				return JsonUtil.beanToJson(ro);
 			}
 			user = UserManager.md5Pswd(user);
@@ -108,25 +99,24 @@ public class LoginController {
 					JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
 					ro.setOspState(200);
 					ro.setToken(jwtUserBean.getJwtToken());
-					data.put("ucUser", ucUser);
-					ro.setData(data);
+					ro.setValue("ucUser", ucUser);
 				}
 			} else {
 				ro.setOspState(500);
+				ro.setValue("msg", "服务器异常,注册失败！");
 			}
 			return JsonUtil.beanToJson(ro);
 		} catch (DisabledAccountException e) {
-			ro.setOspState(500);
+			ro.setOspState(403);
+			ro.setValue("msg", "帐号已经禁止登录！");
 			return JsonUtil.beanToJson(ro);
 		} catch (AccountException e) {
-			ro.setOspState(500);
-			e.printStackTrace();
-			return JsonUtil.beanToJson(ro);
-		} catch (MyRuntimeException e) {
-			ro.setOspState(400);
+			ro.setOspState(401);
+			ro.setValue("msg", "帐号或密码不正确！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
-			ro.setOspState(402);
+			ro.setOspState(500);
+			ro.setValue("msg", "服务器异常，注册失败！");
 			e.printStackTrace();
 			return JsonUtil.beanToJson(ro);
 		}
@@ -155,6 +145,7 @@ public class LoginController {
 	public String noauth() {
 		ResponseObject ro = ResponseObject.getInstance();
 		ro.setOspState(403);
+		ro.setValue("msg", "没有权限！");
 		return JsonUtil.beanToJson(ro);
 	}
 	
@@ -164,6 +155,7 @@ public class LoginController {
 	public String toLogin() {
 		ResponseObject ro = ResponseObject.getInstance();
 		ro.setOspState(401);
+		ro.setValue("msg", "没有登录，请先登录！");
 		return JsonUtil.beanToJson(ro);
 	}
 	

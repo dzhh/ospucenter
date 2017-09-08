@@ -290,4 +290,9 @@ public class UcPermissionServiceImpl extends BaseMybatisDao<UcPermissionMapper> 
 		return ucPermissionMapper.selectPermissions();
 	}
 
+	@Override
+	public List<UcMenu> selectMenus() {
+	   return ucMenuMapper.selectMenus();
+	}
+
 }

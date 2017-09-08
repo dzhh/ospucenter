@@ -18,6 +18,11 @@
     from uc_menu
     where menu_id = #{menuId,jdbcType=INTEGER}
   </select>
+   <select id="selectMenus" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from uc_menu
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from uc_menu
     where menu_id = #{menuId,jdbcType=INTEGER}

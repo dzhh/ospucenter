@@ -13,6 +13,8 @@ public interface UcUserRoleMapper {
 	int insertSelective(UcUserRole record);
 
 	int deleteByUserId(@Param("id") Integer id);
+	
+	int deleteByRoleId(@Param("id") Integer id);
 
 	int deleteRoleByUserIds(@Param("userIds") String[] userIds);
 

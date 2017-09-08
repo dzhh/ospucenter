@@ -1,6 +1,5 @@
 package com.osp.ucenter.controller;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +14,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
+import com.osp.ucenter.mybatis.page.Pagination;
+import com.osp.ucenter.persistence.bo.CommonRequestBody;
 import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.model.UcMenu;
 import com.osp.ucenter.service.UcPermissionService;
@@ -33,30 +34,53 @@ public class SysPermissionController {
 	UcPermissionService ucPermissionService;
 
 	/**
+	 * 菜单列表
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/menuLists", method = { RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody
+	public String menuLists(@RequestBody Pagination<UcMenu> pagination) {
+		ResponseObject ro = ResponseObject.getInstance();
+		try {
+			this.getMenus(ro);
+			ro.setOspState(200);
+			return JsonUtil.beanToJson(ro);
+		} catch (MyRuntimeException e) {
+			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(402);
+			ro.setValue("msg", "服务器异常，展示菜单列表失败！");
+			return JsonUtil.beanToJson(ro);
+		}
+	}
+
+	/**
 	 * 权限列表
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/permissionLists", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String permissionLists() {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> data = new HashMap<String,Object>();
 		try {
-			List<UcPermissionMenuActionBo> ucPermissionMenuActionBo = ucPermissionService.selectPermissions();
-			data.put("permissionList", ucPermissionMenuActionBo);
-			ro.setData(data);
+			this.getUcPermissionMenuAction(ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，展示权限列表失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
-	
+
 	/**
 	 * 添加菜单权限
 	 * 
@@ -72,14 +96,17 @@ public class SysPermissionController {
 				ro.setOspState(200);
 			} else {
 				ro.setOspState(500);
+				ro.setValue("msg", "添加菜单失败!");
 			}
+			this.getMenus(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，添加菜单权限失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -92,22 +119,27 @@ public class SysPermissionController {
 	 */
 	@RequestMapping(value = "/deleteMenu", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String deleteMenu(String menuIds) {
+	public String deleteMenu(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
+		Map<String, Object> data = null;
 		try {
-			if (ucPermissionService.deleteByMenuIds(menuIds).get("ucRolePermission").equals("操作成功")) {
+			data = ucPermissionService.deleteByMenuIds(commonRequestBody.getIds());
+			if (data.get("ucRolePermission").equals("操作成功")) {
 				ro.setOspState(200);
-				ro.setData(ucPermissionService.deleteByMenuIds(menuIds));
+				ro.setData(data);
 			} else {
 				ro.setOspState(500);
+				ro.setValue("msg", "删除菜单失败！");
 			}
+			this.getMenus(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，删除菜单权限失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -120,23 +152,44 @@ public class SysPermissionController {
 	 */
 	@RequestMapping(value = "/deletePermission", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String deletePermissionById(String permissionIds) {
+	public String deletePermissionById(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			if (ucPermissionService.deleteByMenuIds(permissionIds).get("ucRolePermission").equals("操作成功")) {
+			ro.setData(ucPermissionService.deleteByMenuIds(commonRequestBody.getIds()));
+			if (ro.getData().get("ucRolePermission").equals("操作成功")) {
 				ro.setOspState(200);
-				ro.setData(ucPermissionService.deleteByMenuIds(permissionIds));
 			} else {
 				ro.setOspState(500);
+				ro.setValue("msg", "删除权限失败！");
 			}
+			this.getUcPermissionMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，删除权限失败！");
 			return JsonUtil.beanToJson(ro);
+		}
+	}
+
+	public void getUcPermissionMenuAction(ResponseObject ro) {
+		try {
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBo = ucPermissionService.selectPermissions();
+			ro.setValue("permissionList", ucPermissionMenuActionBo);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	public void getMenus(ResponseObject ro) {
+		try {
+			List<UcMenu> ucMenus = ucPermissionService.selectMenus();
+			ro.setValue("menuLists", ucMenus);
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 

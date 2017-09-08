@@ -1,5 +1,7 @@
 package com.osp.ucenter.persistence.dao;
 
+import java.util.List;
+
 import com.osp.ucenter.persistence.model.UcMenu;
 
 public interface UcMenuMapper {
@@ -11,6 +13,8 @@ public interface UcMenuMapper {
 	int insertSelective(UcMenu record);
 	
 	UcMenu selectByPrimaryKey(Integer menuId);
+	
+	List<UcMenu> selectMenus();
 	
 	int updateByPrimaryKeySelective(UcMenu record);
 

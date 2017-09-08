@@ -1,12 +1,12 @@
 package com.osp.ucenter.controller;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
+import com.osp.ucenter.persistence.bo.CommonRequestBody;
 import com.osp.ucenter.persistence.bo.UcPermissionBo;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
 import com.osp.ucenter.service.UcPermissionService;
@@ -46,23 +47,23 @@ public class SysRolePermissionController {
 	@ResponseBody
 	public String rolePermissionAllocation() {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> data = new HashMap<String,Object>();
 		try {
-		 List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService.selectPermissionByRoleIds();
-			data.put("rolePermission", ucRolePermissionAllocationBos);
-			ro.setData(data);
+			List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService
+					.selectPermissionByRoleIds();
+			ro.setValue("rolePermission", ucRolePermissionAllocationBos);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，权限分配失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
-	
+
 	/**
 	 * 根据角色ID查询权限
 	 * 
@@ -71,21 +72,20 @@ public class SysRolePermissionController {
 	 */
 	@RequestMapping(value = "selectPermissionByRoleId", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String selectPermissionByRoleId(Integer id) {
+	public String selectPermissionByRoleId(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> data = new HashMap<String,Object>();
 		try {
-		 List<UcPermissionBo> permissionBos =ucPermissionService.selectPermissionByRoleId(1);
-			data.put("rolePermission", permissionBos);
-			ro.setData(data);
+			List<UcPermissionBo> permissionBos = ucPermissionService.selectPermissionByRoleId(commonRequestBody.getId());
+			ro.setValue("rolePermission", permissionBos);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，查询权限失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -101,22 +101,26 @@ public class SysRolePermissionController {
 	 */
 	@RequestMapping(value = "addPermission2Role", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String addPermission2Role(Integer roleId, String ids) {
+	public String addPermission2Role(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-		    Map<String, Object> data = ucPermissionService.addPermission2Role(4, "2,3,4");		
-			if(data.get("ucRolePermission").equals("操作成功")){
+			Map<String, Object> data = ucPermissionService.addPermission2Role(commonRequestBody.getId(),
+					commonRequestBody.getIds());
+			if (data.get("ucRolePermission").equals("操作成功")) {
 				ro.setOspState(200);
-			}else{
+			} else {
+				ro.setValue("msg", "操作角色的权限失败!");
 				ro.setOspState(500);
 			}
+			this.getUcRolePermissionAllocation(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，操作角色的权限失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -137,15 +141,29 @@ public class SysRolePermissionController {
 				ro.setOspState(200);
 			} else {
 				ro.setOspState(500);
+				ro.setValue("msg", "清空角色权限失败！");
 			}
+			this.getUcRolePermissionAllocation(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，清空角色权限失败！");
 			return JsonUtil.beanToJson(ro);
+		}
+	}
+
+	
+	public void getUcRolePermissionAllocation(ResponseObject ro) {
+		try {
+			List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService
+					.selectPermissionByRoleIds();
+			ro.setValue("rolePermission", ucRolePermissionAllocationBos);
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 }

@@ -43,20 +43,19 @@ public class SysRoleController {
 	public String roleLists(@RequestBody Pagination<UcRole> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		Map<String, Object> findContent = new HashMap<String, Object>();
-		Map<String, Object> data = new HashMap<String, Object>();
 		try {
 			findContent.put("findContent", pagination.getFindContent());
 			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(), pagination.getPageSize());
-			data.put("ucRole", role.getList());
+			ro.setValue("ucRole", role.getList());
 			ro.setOspState(200);
-			ro.setData(data);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，获取角色列表失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -77,8 +76,8 @@ public class SysRoleController {
 	}
 
 	/**
-	 * 角色添加 @RequestMapping(value = "addRole", method = RequestMethod.POST)
-	 * 规则：角色名和系统编号不能都相同
+	 * 角色添加
+	 * 规则：角色名和系统编号不能都相同，暂时还没将系统编号加入判断
 	 * 
 	 * @param role
 	 * @return
@@ -87,51 +86,52 @@ public class SysRoleController {
 	@ResponseBody
 	public String addRole(@RequestBody UcRole ucRole) {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> data = new HashMap<String, Object>();
 		try {
 			ArrayList<UcRole> ucRoles = this.getAllRoles();
 			for (UcRole tempUcRole : ucRoles) {
 				if (tempUcRole.getRoleName().trim().equals(ucRole.getRoleName().trim())) {
 					ro.setOspState(500);
-					data.put("UcRole", "此角色名称已存在！");
+					ro.setValue("msg", "此角色名称已存在，添加角色失败！");
 					return JsonUtil.beanToJson(ro);
 				}
 			}
 			ucRoleService.insertSelective(ucRole);
 			ro.setOspState(200);
-			data.put("UcRole", this.getAllRoles());
-			ro.setData(data);
+			ro.setValue("UcRole", this.getAllRoles());
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			LoggerUtils.fmtError(getClass(), e, "添加角色报错。source[%s]", ucRole.toString());
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
+			ro.setValue("msg", "服务器异常，添加角色失败！");
 			LoggerUtils.fmtError(getClass(), e, "添加角色报错。source[%s]", ucRole.toString());
 			return JsonUtil.beanToJson(ro);
 		}
 	}
 
 	/**
-	 * 删除角色，根据ID，系统管理员不能删除。
+	 * 删除角色，根据ID，系统管理员不能删除。前台传递参数 pagination.ids
 	 * 
-	 * @RequestMapping(value="/deleteRole",method=RequestMethod.POST) @param id
 	 * @return
 	 */
 	@RequestMapping(value = "/deleteRole",method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String deleteRoleById(@RequestBody String ucRoleIds) {
+	public String deleteRoleById(@RequestBody Pagination<UcRole> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			ro.setOspState(200);
-			ro.setData(ucRoleService.deleteRoleById(ucRoleIds));
+			ro.setData(ucRoleService.deleteRoleById(pagination.getIds()));
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
+			ro.setValue("msg", "服务器异常，删除角色失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}

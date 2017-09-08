@@ -17,6 +17,7 @@ import com.osp.ucenter.mybatis.BaseMybatisDao;
 import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
 import com.osp.ucenter.persistence.dao.UcRoleMapper;
+import com.osp.ucenter.persistence.dao.UcUserRoleMapper;
 import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.service.UcRoleService;
 
@@ -33,6 +34,9 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper>  implements 
 	UcRoleMapper ucRoleMapper;
 	
 	@Autowired
+	UcUserRoleMapper ucUserRoleMapper;
+	
+	@Override
 	public int findCount(){
 		return ucRoleMapper.findCount();
 	}
@@ -85,7 +89,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper>  implements 
 	}
 
 	/**
-	 * 删除角色，前台可以多选，角色id使用“,”分割
+	 * 删除角色，前台可以多选，角色id使用“,”分割,同时需要维护用户角色表
 	 */
 	@Override
 	public Map<String, Object> deleteRoleById(String ids) {
@@ -107,10 +111,11 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper>  implements 
 					continue c;
 				}else{
 					count+=this.deleteByPrimaryKey(id);
+					ucUserRoleMapper.deleteByRoleId(id);
 				}
 			}
 			resultMap.put("count", count);
-			resultMap.put("resultMsg", resultMsg);
+			resultMap.put("msg", resultMsg);
 		} catch (Exception e) {
 			LoggerUtils.fmtError(getClass(), e, "根据IDS删除用户出现错误，ids[%s]", ids);
 		}

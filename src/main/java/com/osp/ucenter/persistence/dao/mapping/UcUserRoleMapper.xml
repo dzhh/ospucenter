@@ -10,6 +10,10 @@
   <delete id="deleteByUserId">
   	delete from uc_user_role where user_id = #{id,jdbcType=INTEGER}
   </delete>
+  <!-- 根据角色ID删除 -->
+  <delete id="deleteByRoleId">
+  	delete from uc_user_role where role_id = #{id,jdbcType=INTEGER}
+  </delete>
   <delete id="deleteRoleByUserIds">
   	delete from uc_user_role where user_id in 
   	 <foreach item="item" index="index" collection="userIds" 

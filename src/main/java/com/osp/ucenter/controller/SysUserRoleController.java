@@ -17,6 +17,7 @@ import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.mybatis.page.Pagination;
+import com.osp.ucenter.persistence.bo.CommonRequestBody;
 import com.osp.ucenter.persistence.bo.UcRoleBo;
 import com.osp.ucenter.persistence.bo.UserRoleAllocationBo;
 import com.osp.ucenter.service.UcPermissionService;
@@ -39,25 +40,21 @@ public class SysUserRoleController {
 	 * @param findContent
 	 * @return
 	 */
-	@RequestMapping(value = "/allocationLists",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/allocationLists", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String allocationLists(@RequestBody Pagination<UserRoleAllocationBo> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String,Object> findContent = new HashMap<String, Object>();
-		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			findContent.put("findContent", pagination.getFindContent());
-			Pagination<UserRoleAllocationBo> boPage = ucUserService.findUserAndRole(findContent, pagination.getFilterNo(),pagination.getPageSize());
-			data.put("ucUserRole", boPage.getList());
+			this.getUserRoleLists(pagination,ro);
 			ro.setOspState(200);
-			ro.setData(data);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，展示用户角色关系列表失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -71,21 +68,23 @@ public class SysUserRoleController {
 	 *            角色ID，以‘,’间隔
 	 * @return
 	 */
-	@RequestMapping(value = "/addRole2User",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/addRole2User", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String addRole2User(Integer userId, String ids) {
+	public String addRole2User(@RequestBody Pagination<UserRoleAllocationBo> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			Map<String, Object> data = ucUserService.addRole2User(userId,ids);
+			Map<String, Object> data = ucUserService.addRole2User(pagination.getId(), pagination.getIds());
 			ro.setOspState(200);
-			ro.setData(data);
+			ro.setValue("msg", data.get("ucUserRole"));
+			this.getUserRoleLists(pagination,ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，操作用户角色失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -96,13 +95,12 @@ public class SysUserRoleController {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "/selectRoleByUserId",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/selectRoleByUserId", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String selectRoleByUserId(Integer id) {
+	public String selectRoleByUserId(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			List<UcRoleBo> ucRoleBos = ucUserService.selectRoleByUserId(id);
+			List<UcRoleBo> ucRoleBos = ucUserService.selectRoleByUserId(commonRequestBody.getId());
 			List<UcRoleBo> dataRoleBos = new ArrayList<>();
 			for (UcRoleBo ucRoleBo : ucRoleBos) {
 				if (ucRoleBo.isCheck() == true) {
@@ -110,15 +108,15 @@ public class SysUserRoleController {
 				}
 			}
 			ro.setOspState(200);
-			data.put("ucUserRole", dataRoleBos);
-			ro.setData(data);
+			ro.setValue("ucUserRole", dataRoleBos);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常,查询角色失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -130,21 +128,40 @@ public class SysUserRoleController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "clearRoleByUserIds",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "clearRoleByUserIds", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String clearRoleByUserIds(String userIds) {
+	public String clearRoleByUserIds(@RequestBody Pagination<UserRoleAllocationBo> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			ro.setOspState(200);
-			ro.setData(ucUserService.deleteRoleByUserIds(userIds.trim()));
+			ucUserService.deleteRoleByUserIds(pagination.getIds());
+			this.getUserRoleLists(pagination,ro);	
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			e.printStackTrace();
+			ro.setValue("msg", "服务器异常，清空角色失败！");
 			return JsonUtil.beanToJson(ro);
+		}
+	}
+
+	/**
+	 * 取得当前页用户角色关联关系
+	 * @param pagination
+	 * @return
+	 */
+	public void getUserRoleLists(Pagination<UserRoleAllocationBo> pagination,ResponseObject ro) {
+		Map<String, Object> findContent = new HashMap<String, Object>();
+		try {
+			findContent.put("findContent", pagination.getFindContent());
+			Pagination<UserRoleAllocationBo> boPage = ucUserService.findUserAndRole(findContent,
+					pagination.getFilterNo(), pagination.getPageSize());
+			ro.setValue("ucUserRole", boPage.getList());
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 }
