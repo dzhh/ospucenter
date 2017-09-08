@@ -45,7 +45,7 @@ public class SysUserController {
 	private HttpServletRequest request;
 
 	/**
-	 * 踢出在线用户 前台需传递参数Pagination.ids 
+	 * 踢出在线用户 前台需传递参数Pagination.ospToken
 	 * 
 	 * @return
 	 */
@@ -55,8 +55,10 @@ public class SysUserController {
 		ResponseObject ro = ResponseObject.getInstance();
 		Map<String, Object> data = new HashMap<String, Object>();
 		try {
-			UcUser ucUser = ucUserService.selectByPrimaryKey(Integer.parseInt(pagination.getIds()));
-			ucUserService.shotOffOnlineUser(ucUser);
+			String osptoken = pagination.getOspToken();
+			if(redisServiceImpl.isKeyExists(osptoken)==true){
+				redisServiceImpl.remove(osptoken);
+			}
 			pagination.setTotalCount((int)redisServiceImpl.count());
 			int start = (pagination.getPageNo() - 1) * pagination.getPageSize();
 			int end = start + pagination.getPageSize();

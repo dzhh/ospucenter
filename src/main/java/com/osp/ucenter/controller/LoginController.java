@@ -154,7 +154,17 @@ public class LoginController {
 	@RequestMapping(value = "/auth", method = { RequestMethod.GET, RequestMethod.POST })
 	public String noauth() {
 		ResponseObject ro = ResponseObject.getInstance();
-		ro.setOspState(402);
+		ro.setOspState(403);
 		return JsonUtil.beanToJson(ro);
 	}
+	
+
+	@ResponseBody
+	@RequestMapping(value = "/toLogin", method = { RequestMethod.GET, RequestMethod.POST })
+	public String toLogin() {
+		ResponseObject ro = ResponseObject.getInstance();
+		ro.setOspState(401);
+		return JsonUtil.beanToJson(ro);
+	}
+	
 }

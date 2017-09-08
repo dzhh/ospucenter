@@ -55,6 +55,7 @@ public class OspAuthorizingRealm extends AuthorizingRealm {
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection arg0) {
+		System.out.println("=====================有没有权限呢");
 		/*
 		 * Integer userId = TokenManager.getUserId(); SimpleAuthorizationInfo
 		 * info = new SimpleAuthorizationInfo();

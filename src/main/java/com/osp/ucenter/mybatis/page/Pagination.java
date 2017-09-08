@@ -20,6 +20,7 @@ public class Pagination<T> extends SimplePage implements java.io.Serializable, P
 	// 查询时的过滤条件
 	private String findContent;
 	private String ids;
+	private String ospToken;
 
 	@SuppressWarnings("unchecked")
 	public Pagination(int pageNo, int pageSize, int totalCount, @SuppressWarnings("rawtypes") List list) {
@@ -142,6 +143,14 @@ public class Pagination<T> extends SimplePage implements java.io.Serializable, P
 
 	public void setIds(String ids) {
 		this.ids = ids;
+	}
+
+	public String getOspToken() {
+		return ospToken;
+	}
+
+	public void setOspToken(String ospToken) {
+		this.ospToken = ospToken;
 	}
 
 }

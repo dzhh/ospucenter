@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.osp.common.json.JsonUtil;
@@ -46,6 +48,7 @@ public class SecurityFilter implements Filter {
 		restApp.put("/user/login", 1);
 		restApp.put("/user/register", 1);
 		restApp.put("/user/auth", 1);
+		restApp.put("/user/toLogin", 1);
 		
 	}
 	
@@ -75,18 +78,19 @@ public class SecurityFilter implements Filter {
 		}
 		// 1. 检查用户是否已登录 Tocken JWT
 		String osptoken = request.getHeader("token");
+		//String osptoken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MDQ3ODY2MjgsInVzZXJuYW1lIjoiYXNkcXdlIiwiZXhwIjoxNTA0NzkwMjI4LCJuYmYiOjE1MDQ3ODY2Mjh9.-wMXGLH3EZsShoScVxqj3jp5uSX-FjUc4PxMAgfqRoA";
 		// 2. 没登录，登录去
-		if(redisServiceImpl.isKeyExists(osptoken)==false) {
-			request.getRequestDispatcher("/user/auth").forward(request, response);
-			response.setStatus(402);
-			System.out.println("没有权限======================");
+		if(osptoken==null||osptoken.equals("")||redisServiceImpl.isKeyExists(osptoken)==false) {
+			request.getRequestDispatcher("/user/toLogin").forward(request, response);
+			System.out.println("====================认证不通过======================");
 			return;
 		}
-		Object jwtUser= redisServiceImpl.get(request.getHeader("token"));
+		Object jwtUser= redisServiceImpl.get(osptoken);
 		JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
 		jwtUserBean.setLastActionTime(BaseUtils.getCurrentTime());//更新会话最后活动时间
-		redisServiceImpl.put(request.getHeader("token"), jwtUserBean, 3600);
-
+		redisServiceImpl.put(osptoken, jwtUserBean, 3600);
+	
+		
 		// 3. 得到用户想访问的资源
 
 		// 4. 得到访问该资源需要的权限
