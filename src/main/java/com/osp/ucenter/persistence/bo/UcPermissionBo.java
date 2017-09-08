@@ -3,7 +3,6 @@ package com.osp.ucenter.persistence.bo;
 import java.io.Serializable;
 
 import com.osp.ucenter.common.utils.StringUtils;
-import com.osp.ucenter.persistence.model.UcPermission;
 
 /**
  * 角色权限分配

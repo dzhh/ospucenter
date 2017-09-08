@@ -48,9 +48,7 @@ public class SysRolePermissionController {
 	public String rolePermissionAllocation() {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService
-					.selectPermissionByRoleIds();
-			ro.setValue("rolePermission", ucRolePermissionAllocationBos);
+			this.getUcRolePermissionAllocation(ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {

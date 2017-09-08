@@ -38,15 +38,12 @@ public class SysRoleController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/roleLists",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/roleLists", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String roleLists(@RequestBody Pagination<UcRole> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
-		Map<String, Object> findContent = new HashMap<String, Object>();
 		try {
-			findContent.put("findContent", pagination.getFindContent());
-			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(), pagination.getPageSize());
-			ro.setValue("ucRole", role.getList());
+			this.getRoles(pagination, ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -76,27 +73,30 @@ public class SysRoleController {
 	}
 
 	/**
-	 * 角色添加
-	 * 规则：角色名和系统编号不能都相同，暂时还没将系统编号加入判断
+	 * 角色添加 规则：角色名和系统编号不能都相同，暂时还没将系统编号加入判断
 	 * 
 	 * @param role
 	 * @return
 	 */
-	@RequestMapping(value = "/addRole",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/addRole", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String addRole(@RequestBody UcRole ucRole) {
 		ResponseObject ro = ResponseObject.getInstance();
+		Boolean flag = false;
 		try {
 			ArrayList<UcRole> ucRoles = this.getAllRoles();
 			for (UcRole tempUcRole : ucRoles) {
 				if (tempUcRole.getRoleName().trim().equals(ucRole.getRoleName().trim())) {
 					ro.setOspState(500);
 					ro.setValue("msg", "此角色名称已存在，添加角色失败！");
-					return JsonUtil.beanToJson(ro);
+					flag = true;
+					break;
 				}
 			}
-			ucRoleService.insertSelective(ucRole);
-			ro.setOspState(200);
+			if (flag == false) {
+				ro.setOspState(200);
+				ucRoleService.insertSelective(ucRole);
+			}
 			ro.setValue("UcRole", this.getAllRoles());
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -117,13 +117,14 @@ public class SysRoleController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/deleteRole",method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/deleteRole", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String deleteRoleById(@RequestBody Pagination<UcRole> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			ro.setOspState(200);
 			ro.setData(ucRoleService.deleteRoleById(pagination.getIds()));
+			this.getRoles(pagination, ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -133,6 +134,24 @@ public class SysRoleController {
 			ro.setOspState(402);
 			ro.setValue("msg", "服务器异常，删除角色失败！");
 			return JsonUtil.beanToJson(ro);
+		}
+	}
+
+	/**
+	 * 取得角色别表
+	 * @param pagination
+	 * @param ro
+	 */
+	public void getRoles(Pagination<UcRole> pagination, ResponseObject ro) {
+		Map<String, Object> findContent = new HashMap<String, Object>();
+		try {
+
+			findContent.put("findContent", pagination.getFindContent());
+			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(),
+					pagination.getPageSize());
+			ro.setValue("ucRole", role.getList());
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 
