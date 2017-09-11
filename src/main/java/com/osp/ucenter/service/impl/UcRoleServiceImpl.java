@@ -148,6 +148,10 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		Boolean flag = false;
 		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
 		for (UcRole ucRole : ucRoles) {
+			if(ucRole.getRoleId()==1){//超级管理员拥有所有权限
+				flag=true;
+				break;
+			}
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
 			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
 				if (ucPermissionMenuActionBo.getMenuUrl().equals(uri)
