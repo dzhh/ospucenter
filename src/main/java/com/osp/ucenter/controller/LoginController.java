@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.model.ResponseObject;
+import com.osp.ucenter.common.utils.BaseUtils;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.jwt.JwtHelper;
 import com.osp.ucenter.manager.UserManager;
@@ -80,27 +81,25 @@ public class LoginController {
 	public String register(@RequestBody UcUser user) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			UcUser tempUser = ucUserService.findUser(user.getUserId());
+			UcUser tempUser = ucUserService.findUserByUserName(user.getUserName());
 			if (null != tempUser) {
 				ro.setValue("msg", "此帐号已经存在,注册失败！");
 				ro.setOspState(500);
 				return JsonUtil.beanToJson(ro);
 			}
 			user = UserManager.md5Pswd(user);
+			user.setCreateTime(BaseUtils.getCurrentTime());
+			user.setLastLoginTime(BaseUtils.getCurrentTime());
 			int count = ucUserService.insert(user);
 			if (count > 0) {
 				LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", user.toString());
-				Subject currentUser = SecurityUtils.getSubject();
-				UsernamePasswordToken token = new UsernamePasswordToken(user.getUserName(), user.getUserPwd());
-				currentUser.login(token);
 				// currentUser.hasRole("admin");
 				// 获取 菜单
-				UcUser ucUser = (UcUser) currentUser.getPrincipal();
-				if (ucUser != null) {
-					JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
+				if (user != null) {
+					JWTUserBean jwtUserBean = organizeJWTUserBean(user);
 					ro.setOspState(200);
 					ro.setToken(jwtUserBean.getJwtToken());
-					ro.setValue("ucUser", ucUser);
+					ro.setValue("ucUser", user);
 				}
 			} else {
 				ro.setOspState(500);

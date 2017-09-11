@@ -38,6 +38,8 @@ public interface UcUserService {
 	int updateByPrimaryKey(UcUser record);
 
 	UcUser findUser(Integer userId);
+	
+	UcUser findUserByUserName(String userName);
 
 	List<UcRoleBo> selectRoleByUserId(Integer id);
 

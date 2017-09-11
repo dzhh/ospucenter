@@ -229,4 +229,9 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 		return null;
 	}
 
+	@Override
+	public UcUser findUserByUserName(String userName) {
+		return ucUserMapper.findUserByUserName(userName);
+	}
+
 }

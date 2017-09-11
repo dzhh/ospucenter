@@ -21,6 +21,7 @@ public interface UcUserMapper {
 	 * @return
 	 */
 	UcUser findUser(@Param("userId") Integer userId);
+	UcUser findUserByUserName(@Param("userName") String userName);
    
     int deleteByPrimaryKey(Integer userId);
 

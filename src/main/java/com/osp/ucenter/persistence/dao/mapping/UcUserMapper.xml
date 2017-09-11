@@ -74,6 +74,12 @@
     from uc_user
     where user_id = #{userId,jdbcType=INTEGER}
   </select>
+  <select id="findUserByUserName" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from uc_user
+    where user_name = #{userName,jdbcType=INTEGER}
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from uc_user
     where user_id = #{userId,jdbcType=INTEGER}
