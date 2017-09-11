@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -267,6 +269,9 @@ public class SysUserController {
 	@ResponseBody
 	@RequestMapping(value = "/userInfo", method = { RequestMethod.GET, RequestMethod.POST })
 	public String userInfo() {
+		/*Subject currentUser = SecurityUtils.getSubject();
+		UcUser ucUserw = (UcUser) currentUser.getPrincipal();
+		System.out.println("username========="+ucUserw.getUserName());*/
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			String jwtToken = request.getHeader("token");
@@ -358,4 +363,36 @@ public class SysUserController {
 			throw e;
 		}
 	}
+	
+	
+	/**
+	 * 用户列表
+	 * 
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/userList", method = { RequestMethod.GET, RequestMethod.POST })
+	public String userList() {
+		ResponseObject ro = ResponseObject.getInstance();
+		Pagination<UcUser> pagination = new Pagination<UcUser>();
+		pagination.setPageNo(1);
+		pagination.setPageSize(20);
+		try {
+			Subject currentUser = SecurityUtils.getSubject();
+			UcUser ucUser = (UcUser) currentUser.getPrincipal();
+			System.out.println("username========="+ucUser.getUserName());
+			this.getUserLists(pagination, ro);
+			ro.setOspState(200);
+			return JsonUtil.beanToJson(ro);
+		} catch (MyRuntimeException e) {
+			ro.setOspState(400);
+			ro.setValue("msg", "服务器出现异常！");
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(500);
+			ro.setValue("msg", "服务器异常，获取用户列表失败！");
+			return JsonUtil.beanToJson(ro);
+		}
+	}
+
 }

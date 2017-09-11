@@ -52,12 +52,12 @@ public class UcenterMain {
 		registration.addUrlPatterns("/*");
 		// registration.addInitParameter("paramName", "paramValue");
 		registration.setName("CrossDomainFilter");
-		registration.setOrder(101);
+		registration.setOrder(103);
 		return registration;
 	}
 
 	/**
-	 * 安全权限
+	 * 安全权限 DelegatingFilterProxy servlet容器与IOC容器关联
 	 * 
 	 * @return
 	 */
@@ -70,6 +70,8 @@ public class UcenterMain {
 		registration.setOrder(102);
 		return registration;
 	}
+	
+	
 	
 	@Bean(name = "SecurityFilter")
 	public SecurityFilter getSecurityFilter(){

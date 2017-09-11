@@ -19,8 +19,11 @@ public class UcPermissionMenuActionBo implements Serializable {
 	private Integer actionId;
 	private String menuName;
 	private String menuUrl;
+	private Integer menuParent;
 	private String actionName;
 	private String actionCode;
+	private Integer actionParent;
+	private String actionPreventUrl;
 
 	public Integer getPermissionId() {
 		return PermissionId;
@@ -84,6 +87,30 @@ public class UcPermissionMenuActionBo implements Serializable {
 
 	public void setActionCode(String actionCode) {
 		this.actionCode = actionCode;
+	}
+
+	public Integer getMenuParent() {
+		return menuParent;
+	}
+
+	public void setMenuParent(Integer menuParent) {
+		this.menuParent = menuParent;
+	}
+
+	public Integer getActionParent() {
+		return actionParent;
+	}
+
+	public void setActionParent(Integer actionParent) {
+		this.actionParent = actionParent;
+	}
+
+	public String getActionPreventUrl() {
+		return actionPreventUrl;
+	}
+
+	public void setActionPreventUrl(String actionPreventUrl) {
+		this.actionPreventUrl = actionPreventUrl;
 	}
 
 }

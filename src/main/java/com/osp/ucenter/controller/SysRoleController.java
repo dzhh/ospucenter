@@ -2,6 +2,7 @@ package com.osp.ucenter.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.model.UcRole;
+import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.service.UcRoleService;
 
 /**
@@ -138,6 +140,32 @@ public class SysRoleController {
 	}
 
 	/**
+	 * 我的权限
+	 * @RequestBody UcUser ucUser List<Map<String, Object>>
+	 * @return
+	 */
+	@RequestMapping(value="myPermission",method = { RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody 
+	public String getMyPermission(@RequestBody UcUser ucUser){
+		ResponseObject ro = ResponseObject.getInstance();
+		try {
+			//查询我所有的角色 ---> 权限
+			List<UcRole> roles = ucRoleService.findAllPermissionByUser(ucUser.getUserId());
+			ro.setOspState(200);
+            ro.setValue("myPermission", roles);
+			return JsonUtil.beanToJson(ro);
+		} catch (MyRuntimeException e) {
+			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(402);
+			ro.setValue("msg", "服务器异常，返回我的权限失败！");
+			return JsonUtil.beanToJson(ro);
+		}
+	}
+	
+	/**
 	 * 取得角色别表
 	 * @param pagination
 	 * @param ro
@@ -145,7 +173,6 @@ public class SysRoleController {
 	public void getRoles(Pagination<UcRole> pagination, ResponseObject ro) {
 		Map<String, Object> findContent = new HashMap<String, Object>();
 		try {
-
 			findContent.put("findContent", pagination.getFindContent());
 			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(),
 					pagination.getPageSize());
@@ -154,19 +181,4 @@ public class SysRoleController {
 			throw e;
 		}
 	}
-
-	/**
-	 * 我的权限
-	 * 
-	 * @return
-	 */
-	// @RequestMapping(value="getPermissionTree",method=RequestMethod.POST)
-	// @ResponseBody
-	// public List<Map<String, Object>> getPermissionTree(){
-	// 查询我所有的角色 ---> 权限
-	// List<UcRole> roles = ucRoleService.findNowAllPermission();
-	// 把查询出来的roles 转换成bootstarp 的 tree数据
-	// List<Map<String, Object>> data = UserManager.toTreeData(roles);
-	// return data;
-	// }
 }

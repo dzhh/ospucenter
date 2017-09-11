@@ -45,10 +45,11 @@ public class LoginController {
 		try {
 			String username = user.getUserName();
 			String password = user.getUserPwd();
+			//String username = "zmcheng";
+			//String password = "123456";
 			Subject currentUser = SecurityUtils.getSubject();
 			UsernamePasswordToken token = new UsernamePasswordToken(username, UserManager.md5Pswd(username, password));
 			currentUser.login(token);
-			// currentUser.hasRole("admin");
 			// 获取 菜单
 			UcUser ucUser = (UcUser) currentUser.getPrincipal();
 			if (ucUser != null) {
@@ -142,10 +143,11 @@ public class LoginController {
 
 	@ResponseBody
 	@RequestMapping(value = "/auth", method = { RequestMethod.GET, RequestMethod.POST })
-	public String noauth() {
+	public String noAuthor() {
 		ResponseObject ro = ResponseObject.getInstance();
 		ro.setOspState(403);
-		ro.setValue("msg", "没有权限！");
+		System.out.println("====================没有访问该资源的权限==================");
+		ro.setValue("msg", "对不起，您没有权限，请联系管理员！");
 		return JsonUtil.beanToJson(ro);
 	}
 	
@@ -155,6 +157,7 @@ public class LoginController {
 	public String toLogin() {
 		ResponseObject ro = ResponseObject.getInstance();
 		ro.setOspState(401);
+		System.out.println("=========================没登录====================");
 		ro.setValue("msg", "没有登录，请先登录！");
 		return JsonUtil.beanToJson(ro);
 	}

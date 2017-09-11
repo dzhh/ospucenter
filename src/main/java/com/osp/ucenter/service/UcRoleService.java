@@ -35,9 +35,8 @@ public interface UcRoleService {
 
 	// 根据用户ID查询角色（role），放入到Authorization里。
 	Set<String> findRoleByUserId(Long userId);
-
-	List<UcRole> findNowAllPermission();
-
-	// 初始化数据
-	void initData();
+	
+	List<UcRole> findAllPermissionByUser(Integer userId);
+	
+	Boolean hasPermission(Integer userId,String uri);
 }

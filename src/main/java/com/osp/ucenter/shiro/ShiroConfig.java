@@ -17,6 +17,11 @@ public class ShiroConfig {
 
 	private static final Logger log = LoggerFactory.getLogger(ShiroFilterFactoryBean.class);
 
+	/**
+	 * 缓存 cacheManager realm
+	 * @param ospAuthorizingRealm
+	 * @return
+	 */
 	@Bean(name = "securityManager")
 	public SecurityManager securityManager(@Qualifier("ospAuthorizingRealm") OspAuthorizingRealm ospAuthorizingRealm) {
 		log.info("securityManager()");
@@ -48,7 +53,7 @@ public class ShiroConfig {
 		log.info("shirFilter()");
 		ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
 
-		// 必须设置 SecurityManager
+		// 必须设置 SecurityManager,说明过滤器使用的安全管理器
 		shiroFilterFactoryBean.setSecurityManager(securityManager);
 
 		// 拦截器
@@ -57,13 +62,16 @@ public class ShiroConfig {
 
 	    //<!-- 过滤链定义，从上向下顺序执行，一般将 /**放在最为下边 -->:这是一个坑呢，一不小心代码就不好使了;
 	    //<!-- authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问-->
-		map.put("/**", "authc");
+		//从头开始使用第一个匹配的url模式对应的拦截器链
+		// map.put("/user/login", "anon");
+		// map.put("/**", "authc");
 		//map.put("/**", "anon");
-
-		// 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面
-		shiroFilterFactoryBean.setLoginUrl("/user/login");
-		shiroFilterFactoryBean.setSuccessUrl("/index"); // 登录成功后要跳转的链接
-		shiroFilterFactoryBean.setUnauthorizedUrl("/user/auth");// 未授权界面;
+		//map.put("/**", "roles[admin]");
+         System.out.println("===========================shiro过滤器===========================");
+		// 如果不设置默认会自动寻找Web工程根目录下的"/login.jsp"页面  没认证自动跳转到/user/toLogin
+		shiroFilterFactoryBean.setLoginUrl("/user/toLogin");
+		//shiroFilterFactoryBean.setSuccessUrl("/index"); // 登录成功后要跳转的链接
+		shiroFilterFactoryBean.setUnauthorizedUrl("/user/toLogin");// 未认证界面;
 
 		shiroFilterFactoryBean.setFilterChainDefinitionMap(map);
 

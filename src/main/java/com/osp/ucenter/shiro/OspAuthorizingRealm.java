@@ -9,6 +9,7 @@ import org.apache.shiro.authc.DisabledAccountException;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
@@ -55,7 +56,10 @@ public class OspAuthorizingRealm extends AuthorizingRealm {
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection arg0) {
+		SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo(); 
 		System.out.println("=====================有没有权限呢");
+		authorizationInfo.addRole("admin");  
+		return authorizationInfo;
 		/*
 		 * Integer userId = TokenManager.getUserId(); SimpleAuthorizationInfo
 		 * info = new SimpleAuthorizationInfo();
@@ -65,7 +69,7 @@ public class OspAuthorizingRealm extends AuthorizingRealm {
 		 * permissionService.findPermissionByUserId(userId);
 		 * info.setStringPermissions(permissions); return info;
 		 */
-		return null;
+		
 	}
 
 	/**

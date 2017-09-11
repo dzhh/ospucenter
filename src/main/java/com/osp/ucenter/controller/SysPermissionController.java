@@ -155,7 +155,7 @@ public class SysPermissionController {
 	public String deletePermissionById(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			ro.setData(ucPermissionService.deleteByMenuIds(commonRequestBody.getIds()));
+			ro.setData(ucPermissionService.deletePermissionById(commonRequestBody.getIds()));
 			if (ro.getData().get("ucRolePermission").equals("操作成功")) {
 				ro.setOspState(200);
 			} else {
