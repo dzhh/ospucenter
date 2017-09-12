@@ -180,7 +180,7 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 				idArray = new String[] { userIds };
 			}
 			for (String id : idArray) {
-				this.deleteByPrimaryKey(new Integer(id));
+				ucUserRoleMapper.deleteByUserId(new Integer(id));
 			}
 			data.put("status", 200);
 		} catch (Exception e) {

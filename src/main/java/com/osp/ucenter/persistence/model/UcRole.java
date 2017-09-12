@@ -12,7 +12,7 @@ public class UcRole implements Serializable {
 	private Integer roleId;
 	private String roleName;
 	private String systemcode;
-	private Integer value;// 前台需要
+	private String value;// 前台需要
 	private String label;// 前台需要
 	// role --> permission 一对多处理
 	private List<UcPermissionMenuActionBo> permissions = new LinkedList<UcPermissionMenuActionBo>();
@@ -49,19 +49,19 @@ public class UcRole implements Serializable {
 		this.permissions = permissions;
 	}
 
-	public Integer getValue() {
-		return value;
-	}
-
-	public void setValue(Integer value) {
-		this.value = value;
-	}
-
 	public String getLabel() {
 		return label;
 	}
 
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
 	}
 }
