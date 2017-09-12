@@ -174,14 +174,18 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
 		for (UcRole ucRole : ucRoles) {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
-			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
-				if (ucPermissionMenuActionBo.getActionId()!=null){
-					
+			for (UcPermissionMenuActionBo menuBo : ucPermissionMenuActionBos) {
+				System.out.println("==="+ucRole.getRoleName()+"=============peimissionId========="+menuBo.getPermissionId());
+				if (menuBo.getMenuId()!=null){
+					UcMenu ucMenu = new UcMenu(menuBo.getMenuId(),menuBo.getMenuName(),menuBo.getMenuUrl(),menuBo.getMenuParent(),menuBo.getMenuIcon());
+				    ucMenus.add(ucMenu);
 				}
 			}
 		}
-		
-		return null;
+		for(UcMenu ucMenu:ucMenus){
+			System.out.println("================"+ucMenu.getMenuId());
+		}
+		return "zmcheng";
 	}
 	
 }

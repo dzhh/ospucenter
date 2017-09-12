@@ -39,4 +39,6 @@ public interface UcRoleService {
 	List<UcRole> findAllPermissionByUser(Integer userId);
 	
 	Boolean hasPermission(Integer userId,String uri);
+	
+	public String getMenuTree(Integer userId);
 }

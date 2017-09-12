@@ -157,6 +157,26 @@ public class SysUserRoleController {
 			return JsonUtil.beanToJson(ro);
 		}
 	}
+	
+	@RequestMapping(value = "get", method = { RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody
+	public String gets() {
+		ResponseObject ro = ResponseObject.getInstance();
+		try {
+			ro.setOspState(200);
+			ro.setValue("zmcheng", ucRoleService.getMenuTree(1));
+			return JsonUtil.beanToJson(ro);
+		} catch (MyRuntimeException e) {
+			ro.setOspState(400);
+			ro.setValue("msg", "服务器异常！");
+			return JsonUtil.beanToJson(ro);
+		} catch (Exception e) {
+			ro.setOspState(402);
+			ro.setValue("msg", "服务器异常，清空角色失败！");
+			return JsonUtil.beanToJson(ro);
+		}
+	}
+	
 
 	/**
 	 * 取得当前页用户角色关联关系

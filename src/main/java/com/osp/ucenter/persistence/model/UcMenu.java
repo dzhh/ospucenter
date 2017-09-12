@@ -17,12 +17,21 @@ public class UcMenu implements Serializable {
 	}
 
 	public UcMenu(Integer menuId, String menuName, String menuUrl, Integer menuParent, String menuIcon) {
-
+		this.menuId = menuId;
+		this.menuName = menuName;
+		this.menuUrl = menuUrl;
+		this.menuParent = menuParent;
+		this.menuIcon = menuIcon;
 	}
 
 	public UcMenu(Integer menuId, String menuName, String menuUrl, Integer menuParent, String menuIcon,
 			String systemcode) {
-
+		this.menuId = menuId;
+		this.menuName = menuName;
+		this.menuUrl = menuUrl;
+		this.menuParent = menuParent;
+		this.menuIcon = menuIcon;
+		this.systemcode = systemcode;
 	}
 
 	public Integer getMenuId() {

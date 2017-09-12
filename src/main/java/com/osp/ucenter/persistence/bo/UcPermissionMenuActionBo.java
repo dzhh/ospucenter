@@ -19,6 +19,7 @@ public class UcPermissionMenuActionBo implements Serializable {
 	private Integer actionId;
 	private String menuName;
 	private String menuUrl;
+	private String menuIcon;
 	private Integer menuParent;
 	private String actionName;
 	private String actionCode;
@@ -111,6 +112,14 @@ public class UcPermissionMenuActionBo implements Serializable {
 
 	public void setActionPreventUrl(String actionPreventUrl) {
 		this.actionPreventUrl = actionPreventUrl;
+	}
+
+	public String getMenuIcon() {
+		return menuIcon;
+	}
+
+	public void setMenuIcon(String menuIcon) {
+		this.menuIcon = menuIcon;
 	}
 
 }
