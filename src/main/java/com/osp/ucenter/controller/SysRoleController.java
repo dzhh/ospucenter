@@ -165,6 +165,12 @@ public class SysRoleController {
 		}
 	}
 	
+	/**
+	 * 取得角色别表
+	 * 
+	 * @param pagination
+	 * @param ro
+	 */
 	public void getRoles(Pagination<UcRole> pagination, ResponseObject ro) {
 		Map<String, Object> findContent = new HashMap<String, Object>();
 		try {
@@ -182,7 +188,7 @@ public class SysRoleController {
 			}else{
 				result+="]";
 			}
-			ro.setValue("defaultValue", result);
+			ro.setValue("allRoleIds", result);
 		} catch (Exception e) {
 			throw e;
 		}

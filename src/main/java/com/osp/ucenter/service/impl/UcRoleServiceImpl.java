@@ -2,6 +2,7 @@ package com.osp.ucenter.service.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -169,7 +170,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 	}
 	
 	public String getMenuTree(Integer userId){
-		Map<Integer,UcMenu> ucMenus = new HashMap<Integer,UcMenu>();
+		Set<UcMenu> ucMenus = new LinkedHashSet<UcMenu>();
 		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
 		for (UcRole ucRole : ucRoles) {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
@@ -177,13 +178,13 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 				System.out.println("==="+ucRole.getRoleName()+"=============peimissionId========="+menuBo.getPermissionId());
 				if (menuBo.getMenuId()!=null){
 					UcMenu ucMenu = new UcMenu(menuBo.getMenuId(),menuBo.getMenuName(),menuBo.getMenuUrl(),menuBo.getMenuParent(),menuBo.getMenuIcon());
-				   
+				    ucMenus.add(ucMenu);
 				}
 			}
 		}
-		/*for(UcMenu ucMenu:ucMenus){
+		for(UcMenu ucMenu:ucMenus){
 			System.out.println("================"+ucMenu.getMenuId());
-		}*/
+		}
 		return "zmcheng";
 	}
 	

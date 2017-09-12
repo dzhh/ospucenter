@@ -219,7 +219,7 @@ public class SysUserRoleController {
 			}else{
 				result+="]";
 			}
-			ro.setValue("defaultValue", result);
+			ro.setValue("allRoleIds", result);
 		} catch (Exception e) {
 			throw e;
 		}
