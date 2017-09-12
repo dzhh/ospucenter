@@ -208,7 +208,18 @@ public class SysUserRoleController {
 			findContent.put("findContent", pagination.getFindContent());
 			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(),
 					pagination.getPageSize());
-			ro.setValue("ucRole", role.getList());
+			List<UcRole> roles = role.getList();
+			ro.setValue("ucRole", roles);
+			String result = "[";
+			for(UcRole ucRole:roles){
+				result += "'" + ucRole.getRoleId() + "',";
+			}
+			if (result.length() > 1) {
+				result = result.substring(0, result.length() - 1) + "]";
+			}else{
+				result+="]";
+			}
+			ro.setValue("defaultValue", result);
 		} catch (Exception e) {
 			throw e;
 		}
