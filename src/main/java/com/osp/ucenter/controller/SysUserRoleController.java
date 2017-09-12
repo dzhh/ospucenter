@@ -113,6 +113,8 @@ public class SysUserRoleController {
 			}
 			if (result.length() > 1) {
 				result = result.substring(0, result.length() - 1) + "]";
+			}else{
+				result+="]";
 			}
 			ro.setOspState(200);
 			ro.setValue("defaultValue", result);
