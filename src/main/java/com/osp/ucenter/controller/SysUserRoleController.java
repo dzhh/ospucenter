@@ -101,10 +101,7 @@ public class SysUserRoleController {
 	 */
 	@RequestMapping(value = "/selectRoleByUserId", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String selectRoleByUserId() {
-		// @RequestBody Pagination<UcRole> pagination
-		Pagination<UcRole> pagination = new Pagination<UcRole>();
-		pagination.setId(1);
+	public String selectRoleByUserId(@RequestBody Pagination<UcRole> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			List<UcRoleBo> ucRoleBos = ucUserService.selectRoleByUserId(pagination.getId());
