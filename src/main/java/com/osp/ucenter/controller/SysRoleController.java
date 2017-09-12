@@ -179,16 +179,6 @@ public class SysRoleController {
 					pagination.getPageSize());
 			List<UcRole> roles = role.getList();
 			ro.setValue("ucRole", roles);
-			String result = "[";
-			for(UcRole ucRole:roles){
-				result += ucRole.getRoleId() + ",";
-			}
-			if (result.length() > 1) {
-				result = result.substring(0, result.length() - 1) + "]";
-			}else{
-				result+="]";
-			}
-			ro.setValue("allRoleIds", result);
 		} catch (Exception e) {
 			throw e;
 		}

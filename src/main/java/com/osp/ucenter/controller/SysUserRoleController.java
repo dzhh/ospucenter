@@ -106,16 +106,14 @@ public class SysUserRoleController {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			List<UcRoleBo> ucRoleBos = ucUserService.selectRoleByUserId(pagination.getId());
-			String result = "[";
+			String result = "";
 			for (UcRoleBo ucRoleBo : ucRoleBos) {
 				if (ucRoleBo.isCheck() == true) {
-					result += "'" + ucRoleBo.getRoleId() + "',";
+					result += ucRoleBo.getRoleId() + ",";
 				}
 			}
 			if (result.length() > 1) {
-				result = result.substring(0, result.length() - 1) + "]";
-			}else{
-				result+="]";
+				result = result.substring(0, result.length() - 1);
 			}
 			ro.setOspState(200);
 			ro.setValue("defaultValue", result);
@@ -158,9 +156,10 @@ public class SysUserRoleController {
 			return JsonUtil.beanToJson(ro);
 		}
 	}
-	
+
 	/**
-	 * 根据用户ID取得用户授权的菜单   前台需要传递参数 UcUser.userId
+	 * 根据用户ID取得用户授权的菜单 前台需要传递参数 UcUser.userId
+	 * 
 	 * @param ucUser
 	 * @return
 	 */
@@ -182,7 +181,6 @@ public class SysUserRoleController {
 			return JsonUtil.beanToJson(ro);
 		}
 	}
-	
 
 	/**
 	 * 取得当前页用户角色关联关系
@@ -216,14 +214,12 @@ public class SysUserRoleController {
 					pagination.getPageSize());
 			List<UcRole> roles = role.getList();
 			ro.setValue("ucRole", roles);
-			String result = "[";
-			for(UcRole ucRole:roles){
+			String result = "";
+			for (UcRole ucRole : roles) {
 				result += ucRole.getRoleId() + ",";
 			}
 			if (result.length() > 1) {
-				result = result.substring(0, result.length() - 1) + "]";
-			}else{
-				result+="]";
+				result = result.substring(0, result.length() - 1);
 			}
 			ro.setValue("allRoleIds", result);
 		} catch (Exception e) {

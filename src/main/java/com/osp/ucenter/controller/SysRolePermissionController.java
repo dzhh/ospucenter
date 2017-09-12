@@ -16,6 +16,7 @@ import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.persistence.bo.CommonRequestBody;
 import com.osp.ucenter.persistence.bo.UcPermissionBo;
+import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
 import com.osp.ucenter.service.UcPermissionService;
 import com.osp.ucenter.service.UcRoleService;
@@ -75,6 +76,14 @@ public class SysRolePermissionController {
 		try {
 			List<UcPermissionBo> permissionBos = ucPermissionService.selectPermissionByRoleId(commonRequestBody.getId());
 			ro.setValue("rolePermission", permissionBos);
+			String result = "";
+			for(UcPermissionBo ucPermissionBo:permissionBos){
+				result += ucPermissionBo.getPermissionId() + ",";
+			}
+			if (result.length() > 1) {
+				result = result.substring(0, result.length() - 1);
+			}
+			ro.setValue("defaultValue", result);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -160,6 +169,27 @@ public class SysRolePermissionController {
 			List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService
 					.selectPermissionByRoleIds();
 			ro.setValue("rolePermission", ucRolePermissionAllocationBos);
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 权限列表
+	 * @param ro
+	 */
+	public void getUcPermissionMenuAction(ResponseObject ro) {
+		try {
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucPermissionService.selectPermissions();
+			ro.setValue("permissionList", ucPermissionMenuActionBos);
+			String result = "";
+			for(UcPermissionMenuActionBo ucPermissionMenuActionBo:ucPermissionMenuActionBos){
+				result += ucPermissionMenuActionBo.getPermissionId() + ",";
+			}
+			if (result.length() > 1) {
+				result = result.substring(0, result.length() - 1);
+			}
+			ro.setValue("allPermissionIds", result);
 		} catch (Exception e) {
 			throw e;
 		}
