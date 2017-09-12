@@ -269,9 +269,6 @@ public class SysUserController {
 	@ResponseBody
 	@RequestMapping(value = "/userInfo", method = { RequestMethod.GET, RequestMethod.POST })
 	public String userInfo() {
-		/*Subject currentUser = SecurityUtils.getSubject();
-		UcUser ucUserw = (UcUser) currentUser.getPrincipal();
-		System.out.println("username========="+ucUserw.getUserName());*/
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			String jwtToken = request.getHeader("token");

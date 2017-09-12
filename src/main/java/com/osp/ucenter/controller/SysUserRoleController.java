@@ -19,6 +19,7 @@ import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.bo.UcRoleBo;
 import com.osp.ucenter.persistence.bo.UserRoleAllocationBo;
 import com.osp.ucenter.persistence.model.UcRole;
+import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.service.UcPermissionService;
 import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
@@ -158,13 +159,18 @@ public class SysUserRoleController {
 		}
 	}
 	
-	@RequestMapping(value = "get", method = { RequestMethod.GET, RequestMethod.POST })
+	/**
+	 * 根据用户ID取得用户授权的菜单   前台需要传递参数 UcUser.userId
+	 * @param ucUser
+	 * @return
+	 */
+	@RequestMapping(value = "getMenuTrees", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String gets() {
+	public String getMenuTrees(@RequestBody UcUser ucUser) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			ro.setOspState(200);
-			ro.setValue("zmcheng", ucRoleService.getMenuTree(1));
+			ro.setValue("menuTrees", ucRoleService.getMenuTrees(ucUser.getUserId()));
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -172,7 +178,7 @@ public class SysUserRoleController {
 			return JsonUtil.beanToJson(ro);
 		} catch (Exception e) {
 			ro.setOspState(402);
-			ro.setValue("msg", "服务器异常，清空角色失败！");
+			ro.setValue("msg", "服务器异常，取得用户菜单失败！");
 			return JsonUtil.beanToJson(ro);
 		}
 	}
@@ -212,7 +218,7 @@ public class SysUserRoleController {
 			ro.setValue("ucRole", roles);
 			String result = "[";
 			for(UcRole ucRole:roles){
-				result += "'" + ucRole.getRoleId() + "',";
+				result += ucRole.getRoleId() + ",";
 			}
 			if (result.length() > 1) {
 				result = result.substring(0, result.length() - 1) + "]";

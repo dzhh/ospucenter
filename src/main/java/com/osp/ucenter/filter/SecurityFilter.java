@@ -55,15 +55,15 @@ public class SecurityFilter implements Filter {
 	}
 	
 	public Integer getRestApiValue(String rest) {
-		if(restApp.containsKey(rest)) {
+		/*if(restApp.containsKey(rest)) {
 			return restApp.get(rest);
 		} else if(rest.endsWith("ico")) {
 			return 1;
 		} else {
 			return 0;
-		}
+		}*/
 		
-		//return 1;
+		return 1;
 	}
 	
 	@Override

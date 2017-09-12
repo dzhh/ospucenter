@@ -181,7 +181,7 @@ public class SysRoleController {
 			ro.setValue("ucRole", roles);
 			String result = "[";
 			for(UcRole ucRole:roles){
-				result += "'" + ucRole.getRoleId() + "',";
+				result += ucRole.getRoleId() + ",";
 			}
 			if (result.length() > 1) {
 				result = result.substring(0, result.length() - 1) + "]";

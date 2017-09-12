@@ -150,8 +150,8 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		Boolean flag = false;
 		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
 		for (UcRole ucRole : ucRoles) {
-			if(ucRole.getRoleId()==1){//超级管理员拥有所有权限
-				flag=true;
+			if (ucRole.getRoleId() == 1) {// 超级管理员拥有所有权限
+				flag = true;
 				break;
 			}
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
@@ -168,24 +168,40 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		}
 		return flag;
 	}
-	
-	public String getMenuTree(Integer userId){
+
+	/**
+	 * 组织前台菜单
+	 */
+	public Set<UcMenu> getMenuTrees(Integer userId) {
 		Set<UcMenu> ucMenus = new LinkedHashSet<UcMenu>();
+		Set<UcMenu> trees = new LinkedHashSet<UcMenu>();
 		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
 		for (UcRole ucRole : ucRoles) {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
 			for (UcPermissionMenuActionBo menuBo : ucPermissionMenuActionBos) {
-				System.out.println("==="+ucRole.getRoleName()+"=============peimissionId========="+menuBo.getPermissionId());
-				if (menuBo.getMenuId()!=null){
-					UcMenu ucMenu = new UcMenu(menuBo.getMenuId(),menuBo.getMenuName(),menuBo.getMenuUrl(),menuBo.getMenuParent(),menuBo.getMenuIcon());
-				    ucMenus.add(ucMenu);
+				if (menuBo.getMenuId() != null) {
+					UcMenu ucMenu = new UcMenu(menuBo.getMenuId(), menuBo.getMenuName(), menuBo.getMenuUrl(),
+							menuBo.getMenuParent(), menuBo.getMenuIcon());
+					ucMenus.add(ucMenu);
+					if (menuBo.getMenuParent() == null) {
+						trees.add(ucMenu);
+					}
 				}
 			}
 		}
-		for(UcMenu ucMenu:ucMenus){
-			System.out.println("================"+ucMenu.getMenuId());
+		for (UcMenu ucMenu : trees) {
+			this.organizingMenuTree(ucMenu, ucMenus);
 		}
-		return "zmcheng";
+		return trees;
 	}
-	
+
+	public void organizingMenuTree(UcMenu ucMenu, Set<UcMenu> ucMenus) {
+		for (UcMenu tempMenu : ucMenus) {
+			if (tempMenu.getMenuParent() != null && ucMenu.getMenuId() == tempMenu.getMenuParent()) {
+				ucMenu.getChildren().add(tempMenu);
+				organizingMenuTree(tempMenu, ucMenus);
+			}
+		}
+	}
+
 }

@@ -1,6 +1,8 @@
 package com.osp.ucenter.persistence.model;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 
 public class UcMenu implements Serializable {
 
@@ -11,6 +13,31 @@ public class UcMenu implements Serializable {
 	private Integer menuParent;
 	private String systemcode;
 	private String menuIcon;
+	private List<UcMenu> children = null;
+
+	public int hashCode() {
+		int result = menuId;
+		result = result + ((menuName == null) ? 0 : menuName.hashCode());
+		return result;
+	}
+
+	public boolean equals(Object obj) {
+
+		if (this == obj)
+			return true;
+
+		if (obj == null)
+			return false;
+
+		if (getClass() != obj.getClass())
+			return false;
+
+		UcMenu other = (UcMenu) obj;
+		if (menuId == other.getMenuId()) {
+			return true;
+		}
+		return false;
+	}
 
 	public UcMenu() {
 		super();
@@ -80,5 +107,16 @@ public class UcMenu implements Serializable {
 
 	public void setMenuIcon(String menuIcon) {
 		this.menuIcon = menuIcon == null ? null : menuIcon.trim();
+	}
+
+	public List<UcMenu> getChildren() {
+		if (this.children == null) {
+			this.children = new LinkedList<UcMenu>();
+		}
+		return children;
+	}
+
+	public void setChildren(List<UcMenu> children) {
+		this.children = children;
 	}
 }

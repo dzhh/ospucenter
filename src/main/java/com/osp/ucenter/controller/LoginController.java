@@ -21,6 +21,7 @@ import com.osp.ucenter.jwt.JwtHelper;
 import com.osp.ucenter.manager.UserManager;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.model.UcUser;
+import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
 import com.osp.ucenter.service.impl.RedisServiceImpl;
 
@@ -35,6 +36,9 @@ import com.osp.ucenter.service.impl.RedisServiceImpl;
 public class LoginController {
 	@Autowired
 	UcUserService ucUserService;
+	
+	@Autowired
+	UcRoleService ucRoleService;
 
 	@Autowired
 	private RedisServiceImpl redisServiceImpl;
@@ -46,17 +50,16 @@ public class LoginController {
 		try {
 			String username = user.getUserName();
 			String password = user.getUserPwd();
-			//String username = "zmcheng";
-			//String password = "123456";
 			Subject currentUser = SecurityUtils.getSubject();
 			UsernamePasswordToken token = new UsernamePasswordToken(username, UserManager.md5Pswd(username, password));
 			currentUser.login(token);
-			// 获取 菜单
 			UcUser ucUser = (UcUser) currentUser.getPrincipal();
 			if (ucUser != null) {
 				JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
 				ro.setToken(jwtUserBean.getJwtToken());
 				ro.setOspState(200);
+				// 获取 菜单
+				ro.setValue("menuTrees", ucRoleService.getMenuTrees(ucUser.getUserId()));
 				ro.setValue("ucUser", ucUser);
 			}
 			return JsonUtil.beanToJson(ro);
@@ -76,6 +79,11 @@ public class LoginController {
 		}
 	}
 
+	/**
+	 * 目前根据前台要求  用户注册后，需要重新登陆
+	 * @param user
+	 * @return
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/register")
 	public String register(@RequestBody UcUser user) {
@@ -89,17 +97,14 @@ public class LoginController {
 			}
 			user = UserManager.md5Pswd(user);
 			user.setCreateTime(BaseUtils.getCurrentTime());
-			user.setLastLoginTime(BaseUtils.getCurrentTime());
 			int count = ucUserService.insert(user);
 			if (count > 0) {
 				LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", user.toString());
-				// currentUser.hasRole("admin");
-				// 获取 菜单
 				if (user != null) {
-					JWTUserBean jwtUserBean = organizeJWTUserBean(user);
 					ro.setOspState(200);
-					ro.setToken(jwtUserBean.getJwtToken());
-					ro.setValue("ucUser", user);
+					//JWTUserBean jwtUserBean = organizeJWTUserBean(user);				
+					//ro.setToken(jwtUserBean.getJwtToken());
+					//ro.setValue("ucUser", user);
 				}
 			} else {
 				ro.setOspState(500);

@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
+import com.osp.ucenter.persistence.model.UcMenu;
 import com.osp.ucenter.persistence.model.UcRole;
 
 public interface UcRoleService {
@@ -40,5 +41,5 @@ public interface UcRoleService {
 	
 	Boolean hasPermission(Integer userId,String uri);
 	
-	public String getMenuTree(Integer userId);
+	public Set<UcMenu> getMenuTrees(Integer userId);
 }
