@@ -171,12 +171,6 @@ public class UcPermissionServiceImpl extends BaseMybatisDao<UcPermissionMapper> 
 		} catch (Exception e) {
 			data.put("ucRolePermission", "操作失败，请重试！");
 		}
-		/*
-		 * //清空拥有角色Id为：roleId 的用户权限已加载数据，让权限数据重新加载 List<Long> userIds =
-		 * userRoleMapper.findUserIdByRoleId(roleId);
-		 * TokenManager.clearUserAuthByUserId(userIds); resultMap.put("count",
-		 * count);
-		 */
 		return data;
 
 	}
@@ -294,5 +288,7 @@ public class UcPermissionServiceImpl extends BaseMybatisDao<UcPermissionMapper> 
 	public List<UcMenu> selectMenus() {
 	   return ucMenuMapper.selectMenus();
 	}
+	
+	
 
 }

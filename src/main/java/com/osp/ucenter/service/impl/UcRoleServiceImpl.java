@@ -2,6 +2,7 @@ package com.osp.ucenter.service.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
 import com.osp.ucenter.persistence.dao.UcRoleMapper;
 import com.osp.ucenter.persistence.dao.UcUserRoleMapper;
+import com.osp.ucenter.persistence.model.UcMenu;
 import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.service.UcRoleService;
 
@@ -166,5 +168,20 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		}
 		return flag;
 	}
-
+	
+	public String getMenuTree(Integer userId){
+		Set<UcMenu> ucMenus = new LinkedHashSet<UcMenu>();
+		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
+		for (UcRole ucRole : ucRoles) {
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
+			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
+				if (ucPermissionMenuActionBo.getActionId()!=null){
+					
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 }

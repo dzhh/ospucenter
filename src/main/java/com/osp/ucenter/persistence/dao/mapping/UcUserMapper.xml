@@ -29,9 +29,9 @@
       </if>
       </where>
   </sql>
-  <!-- 用户权限分配的分页查询 -->
+  <!-- 用户角色分配的分页查询 -->
   <select id="findUserAndRole" resultType="com.osp.ucenter.persistence.bo.UserRoleAllocationBo">
-  	select u.user_id userId,u.user_name userName,u.systemcode,u.create_time createTime,u.last_login_time lastLoginTime,u.user_email userEmail,group_concat(ur.role_Name) roleNames,group_concat(ur.role_id) roleIds from
+  	select u.user_id userId,u.user_name userName,u.systemcode,u.create_time createTime,u.status status,u.last_login_time lastLoginTime,u.user_email userEmail,group_concat(ur.role_Name) roleNames,group_concat(ur.role_id) roleIds from
 	 uc_user u
 	left join uc_user_role uur on uur.user_id = u.user_id
 	left join uc_role ur on ur.role_id = uur.role_id

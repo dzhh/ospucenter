@@ -1,6 +1,5 @@
 package com.osp.ucenter.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +16,11 @@ import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.mybatis.page.Pagination;
-import com.osp.ucenter.persistence.bo.CommonRequestBody;
 import com.osp.ucenter.persistence.bo.UcRoleBo;
 import com.osp.ucenter.persistence.bo.UserRoleAllocationBo;
+import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.service.UcPermissionService;
+import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
 
 @Controller
@@ -29,6 +29,10 @@ import com.osp.ucenter.service.UcUserService;
 public class SysUserRoleController {
 	@Autowired
 	UcUserService ucUserService;
+	
+	@Autowired
+	UcRoleService ucRoleService;
+
 	@Autowired
 	UcPermissionService ucPermissionService;
 
@@ -90,25 +94,30 @@ public class SysUserRoleController {
 	}
 
 	/**
-	 * 根据用户ID查询角色
+	 * 根据用户ID查询角色 前台需要传递参数pagination.id pagination.pageNo pagination.pageSize
 	 * 
 	 * @param id
 	 * @return
 	 */
 	@RequestMapping(value = "/selectRoleByUserId", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String selectRoleByUserId(@RequestBody CommonRequestBody commonRequestBody) {
+	public String selectRoleByUserId() {
+		//@RequestBody Pagination<UcRole> pagination
+		Pagination<UcRole> pagination = new Pagination<UcRole>();
+		pagination.setId(1);
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			List<UcRoleBo> ucRoleBos = ucUserService.selectRoleByUserId(commonRequestBody.getId());
-			List<UcRoleBo> dataRoleBos = new ArrayList<>();
+			List<UcRoleBo> ucRoleBos = ucUserService.selectRoleByUserId(pagination.getId());
+			String result = "[";
 			for (UcRoleBo ucRoleBo : ucRoleBos) {
 				if (ucRoleBo.isCheck() == true) {
-					dataRoleBos.add(ucRoleBo);
+					result+="'"+ucRoleBo.getRoleId()+"',";
 				}
 			}
+			result=result.substring(0, result.length()-1)+"]";
 			ro.setOspState(200);
-			ro.setValue("ucUserRole", dataRoleBos);
+			ro.setValue("defaultValue", result);
+			this.getRoles(pagination, ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -158,8 +167,25 @@ public class SysUserRoleController {
 		try {
 			findContent.put("findContent", pagination.getFindContent());
 			Pagination<UserRoleAllocationBo> boPage = ucUserService.findUserAndRole(findContent,
-					pagination.getFilterNo(), pagination.getPageSize());
+					pagination.getPageNo(), pagination.getPageSize());
 			ro.setValue("ucUserRole", boPage.getList());
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	/**
+	 * 取得角色别表
+	 * @param pagination
+	 * @param ro
+	 */
+	public void getRoles(Pagination<UcRole> pagination, ResponseObject ro) {
+		Map<String, Object> findContent = new HashMap<String, Object>();
+		try {
+			findContent.put("findContent", pagination.getFindContent());
+			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(),
+					pagination.getPageSize());
+			ro.setValue("ucRole", role.getList());
 		} catch (Exception e) {
 			throw e;
 		}
