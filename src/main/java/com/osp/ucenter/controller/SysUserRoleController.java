@@ -29,7 +29,7 @@ import com.osp.ucenter.service.UcUserService;
 public class SysUserRoleController {
 	@Autowired
 	UcUserService ucUserService;
-	
+
 	@Autowired
 	UcRoleService ucRoleService;
 
@@ -49,7 +49,7 @@ public class SysUserRoleController {
 	public String allocationLists(@RequestBody Pagination<UserRoleAllocationBo> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			this.getUserRoleLists(pagination,ro);
+			this.getUserRoleLists(pagination, ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -80,7 +80,7 @@ public class SysUserRoleController {
 			Map<String, Object> data = ucUserService.addRole2User(pagination.getId(), pagination.getIds());
 			ro.setOspState(200);
 			ro.setValue("msg", data.get("ucUserRole"));
-			this.getUserRoleLists(pagination,ro);
+			this.getUserRoleLists(pagination, ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -102,7 +102,7 @@ public class SysUserRoleController {
 	@RequestMapping(value = "/selectRoleByUserId", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String selectRoleByUserId() {
-		//@RequestBody Pagination<UcRole> pagination
+		// @RequestBody Pagination<UcRole> pagination
 		Pagination<UcRole> pagination = new Pagination<UcRole>();
 		pagination.setId(1);
 		ResponseObject ro = ResponseObject.getInstance();
@@ -111,10 +111,12 @@ public class SysUserRoleController {
 			String result = "[";
 			for (UcRoleBo ucRoleBo : ucRoleBos) {
 				if (ucRoleBo.isCheck() == true) {
-					result+="'"+ucRoleBo.getRoleId()+"',";
+					result += "'" + ucRoleBo.getRoleId() + "',";
 				}
 			}
-			result=result.substring(0, result.length()-1)+"]";
+			if (result.length() > 1) {
+				result = result.substring(0, result.length() - 1) + "]";
+			}
 			ro.setOspState(200);
 			ro.setValue("defaultValue", result);
 			this.getRoles(pagination, ro);
@@ -144,7 +146,7 @@ public class SysUserRoleController {
 		try {
 			ro.setOspState(200);
 			ucUserService.deleteRoleByUserIds(pagination.getIds());
-			this.getUserRoleLists(pagination,ro);	
+			this.getUserRoleLists(pagination, ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -159,23 +161,25 @@ public class SysUserRoleController {
 
 	/**
 	 * 取得当前页用户角色关联关系
+	 * 
 	 * @param pagination
 	 * @return
 	 */
-	public void getUserRoleLists(Pagination<UserRoleAllocationBo> pagination,ResponseObject ro) {
+	public void getUserRoleLists(Pagination<UserRoleAllocationBo> pagination, ResponseObject ro) {
 		Map<String, Object> findContent = new HashMap<String, Object>();
 		try {
 			findContent.put("findContent", pagination.getFindContent());
-			Pagination<UserRoleAllocationBo> boPage = ucUserService.findUserAndRole(findContent,
-					pagination.getPageNo(), pagination.getPageSize());
+			Pagination<UserRoleAllocationBo> boPage = ucUserService.findUserAndRole(findContent, pagination.getPageNo(),
+					pagination.getPageSize());
 			ro.setValue("ucUserRole", boPage.getList());
 		} catch (Exception e) {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * 取得角色别表
+	 * 
 	 * @param pagination
 	 * @param ro
 	 */
