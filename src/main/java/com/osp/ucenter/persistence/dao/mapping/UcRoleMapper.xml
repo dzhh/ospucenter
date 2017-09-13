@@ -55,7 +55,7 @@
 	        left join uc_action a on a.Action_Id = p.Action_id
   </select>
   <!-- 权限分配页面数据展示 -->
-  <select id="selectPermissionByRoleIds" resultType="com.osp.ucenter.persistence.bo.UcMyPermissionBo">
+  <select id="selectPermissionByRoleIds" resultType="com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo">
   	select ur.role_id roleId,ur.role_Name roleName,group_concat(m.menu_name) menuNames,group_concat(a.action_Name) actionNames,group_concat(p.Permission_id) permissionIds from 
 	uc_permission p
 	left join uc_menu m on m.menu_id = p.Menu_id

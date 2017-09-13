@@ -97,6 +97,7 @@ public class LoginController {
 			}
 			user = UserManager.md5Pswd(user);
 			user.setCreateTime(BaseUtils.getCurrentTime());
+			user.setStatus(1);
 			int count = ucUserService.insert(user);
 			if (count > 0) {
 				LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", user.toString());
