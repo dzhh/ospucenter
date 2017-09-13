@@ -141,18 +141,19 @@ public class SysRoleController {
 
 	/**
 	 * 我的权限
+	 * 
 	 * @RequestBody UcUser ucUser List<Map<String, Object>>
 	 * @return
 	 */
-	@RequestMapping(value="myPermission",method = { RequestMethod.GET, RequestMethod.POST })
-	@ResponseBody 
-	public String getMyPermission(@RequestBody UcUser ucUser){
+	@RequestMapping(value = "myPermission", method = { RequestMethod.GET, RequestMethod.POST })
+	@ResponseBody
+	public String getMyPermission(@RequestBody UcUser ucUser) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			//查询我所有的角色 ---> 权限
+			// 查询我所有的角色 ---> 权限
 			List<UcRole> roles = ucRoleService.findAllPermissionByUser(ucUser.getUserId());
 			ro.setOspState(200);
-            ro.setValue("myPermission", roles);
+			ro.setValue("myPermission", roles);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -164,7 +165,7 @@ public class SysRoleController {
 			return JsonUtil.beanToJson(ro);
 		}
 	}
-	
+
 	/**
 	 * 取得角色别表
 	 * 
@@ -177,8 +178,10 @@ public class SysRoleController {
 			findContent.put("findContent", pagination.getFindContent());
 			Pagination<UcRole> role = ucRoleService.findPage(findContent, pagination.getPageNo(),
 					pagination.getPageSize());
-			List<UcRole> roles = role.getList();
-			ro.setValue("ucRole", roles);
+			for (UcRole ucRole : role.getList()) {
+				ucRole.setKey(ucRole.getRoleId());
+			}
+			ro.setValue("ucRole", role.getList());
 		} catch (Exception e) {
 			throw e;
 		}

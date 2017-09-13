@@ -15,6 +15,7 @@ public class UserRoleAllocationBo extends UcUser implements Serializable {
 	private String roleNames;
 	//Role Id列转行，以‘,’分割
 	private String roleIds;
+	
 	public String getRoleNames() {
 		return roleNames;
 	}

@@ -27,6 +27,7 @@ public class UcPermissionMenuActionBo implements Serializable {
 	private String actionPreventUrl;
 	private String value;// 前台需要
 	private String label;// 前台需要
+	private Integer key;
 
 	public Integer getPermissionId() {
 		return PermissionId;
@@ -138,6 +139,14 @@ public class UcPermissionMenuActionBo implements Serializable {
 
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	public Integer getKey() {
+		return key;
+	}
+
+	public void setKey(Integer key) {
+		this.key = key;
 	}
 
 }

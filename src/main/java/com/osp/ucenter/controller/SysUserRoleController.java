@@ -194,6 +194,9 @@ public class SysUserRoleController {
 			findContent.put("findContent", pagination.getFindContent());
 			Pagination<UserRoleAllocationBo> boPage = ucUserService.findUserAndRole(findContent, pagination.getPageNo(),
 					pagination.getPageSize());
+			for(UserRoleAllocationBo userRoleAllocationBo:boPage.getList()){
+				userRoleAllocationBo.setKey(userRoleAllocationBo.getUserId());
+			}
 			ro.setValue("ucUserRole", boPage.getList());
 		} catch (Exception e) {
 			throw e;

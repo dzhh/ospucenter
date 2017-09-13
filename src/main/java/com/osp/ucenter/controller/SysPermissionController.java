@@ -183,6 +183,7 @@ public class SysPermissionController {
 		try {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucPermissionService.selectPermissions();
 			for(UcPermissionMenuActionBo ucPermissionMenuActionBo:ucPermissionMenuActionBos){
+				ucPermissionMenuActionBo.setKey(ucPermissionMenuActionBo.getPermissionId());
 				if(ucPermissionMenuActionBo.getMenuId()!=null){
 					ucPermissionMenuActionBo.setLabel(ucPermissionMenuActionBo.getMenuName());
 				}else if(ucPermissionMenuActionBo.getActionId()!=null){
@@ -195,6 +196,10 @@ public class SysPermissionController {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param ro
+	 */
 	public void getMenus(ResponseObject ro) {
 		try {
 			List<UcMenu> ucMenus = ucPermissionService.selectMenus();

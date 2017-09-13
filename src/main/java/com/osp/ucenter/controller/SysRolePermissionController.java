@@ -165,13 +165,16 @@ public class SysRolePermissionController {
 	}
 
 	/**
-	 * 
+	 * 用户权限关联表
 	 * @param ro
 	 */
 	public void getUcRolePermissionAllocation(ResponseObject ro) {
 		try {
 			List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService
 					.selectPermissionByRoleIds();
+			for(UcRolePermissionAllocationBo ucRolePermissionAllocationBo:ucRolePermissionAllocationBos){
+				ucRolePermissionAllocationBo.setKey(ucRolePermissionAllocationBo.getRoleId());
+			}
 			ro.setValue("rolePermission", ucRolePermissionAllocationBos);
 		} catch (Exception e) {
 			throw e;

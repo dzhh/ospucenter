@@ -61,16 +61,13 @@ public class UcPermissionServiceImpl extends BaseMybatisDao<UcPermissionMapper> 
 	 */
 	@Override
 	public int deleteByPrimaryKey(Integer id) {
-		/**
-		 * 待补充：同时也要维护操作表与操作权限关联表
-		 */
 		int status = 0;
 		UcPermission ucPermission = ucPermissionMapper.selectByPrimaryKey(id);
 		if (ucPermission != null) {
 			if (ucPermission.getMenuId() != null) {
 				ucMenuMapper.deleteByPrimaryKey(ucPermission.getMenuId());
 			}else if(ucPermission.getActionId()!=null){
-				
+				ucActionMapper.deleteByPrimaryKey(ucPermission.getActionId());
 			}
 			status = ucPermissionMapper.deleteByPrimaryKey(id);
 		}
@@ -165,12 +162,12 @@ public class UcPermissionServiceImpl extends BaseMybatisDao<UcPermissionMapper> 
 						ucRolePermissionMapper.insertSelective(entity);
 					}
 				}
-				data.put("ucRolePermission", "操作成功");
 			}
 
 		} catch (Exception e) {
 			data.put("ucRolePermission", "操作失败，请重试！");
 		}
+		data.put("ucRolePermission", "操作成功");
 		return data;
 
 	}

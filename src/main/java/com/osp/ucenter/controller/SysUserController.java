@@ -7,8 +7,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -354,6 +352,7 @@ public class SysUserController {
 					pagination.getPageSize());
 			for (UcUser tempUcUser : ucUsers.getList()) {
 				tempUcUser.setUserPwd("");
+				tempUcUser.setKey(tempUcUser.getUserId());
 			}
 			ro.setValue("ucUser", ucUsers.getList());
 		} catch (Exception e) {
@@ -375,9 +374,6 @@ public class SysUserController {
 		pagination.setPageNo(1);
 		pagination.setPageSize(20);
 		try {
-			Subject currentUser = SecurityUtils.getSubject();
-			UcUser ucUser = (UcUser) currentUser.getPrincipal();
-			System.out.println("username========="+ucUser.getUserName());
 			this.getUserLists(pagination, ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);

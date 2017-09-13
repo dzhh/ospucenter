@@ -73,7 +73,7 @@
     <!-- 普通的分页查询 -->
   <select id="findAll" resultType="com.osp.ucenter.persistence.model.UcRole" >
   	 select 
-     role_id value,role_id roleId, role_Name label, role_Name roleName,SystemCode systemcode
+     role_id value,role_id roleId,role_Name label, role_Name roleName,SystemCode systemcode
     from uc_role 
     <include refid="where_all"/>
     <include refid="limit_sql" />

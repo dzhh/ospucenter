@@ -14,6 +14,7 @@ public class UcRole implements Serializable {
 	private String systemcode;
 	private String value;// 前台需要
 	private String label;// 前台需要
+	private Integer key;//前台需要
 	// role --> permission 一对多处理
 	private List<UcPermissionMenuActionBo> permissions = new LinkedList<UcPermissionMenuActionBo>();
 
@@ -63,5 +64,13 @@ public class UcRole implements Serializable {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	public Integer getKey() {
+		return key;
+	}
+
+	public void setKey(Integer key) {
+		this.key = key;
 	}
 }

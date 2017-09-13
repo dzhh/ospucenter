@@ -20,6 +20,8 @@ public class UcRolePermissionAllocationBo implements Serializable {
 	private String actionNames;
 	// 权限Id列转行，以‘,’分割
 	private String permissionIds;
+	
+	private Integer key;//前台需要
 
 	public Integer getRoleId() {
 		return roleId;
@@ -59,5 +61,13 @@ public class UcRolePermissionAllocationBo implements Serializable {
 
 	public void setPermissionIds(String permissionIds) {
 		this.permissionIds = permissionIds;
+	}
+
+	public Integer getKey() {
+		return key;
+	}
+
+	public void setKey(Integer key) {
+		this.key = key;
 	}
 }

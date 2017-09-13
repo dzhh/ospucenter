@@ -17,6 +17,7 @@ public class UcUser implements Serializable {
 	private String userEmail;
 	private String newPwd;
 	private Integer status;
+	private Integer key;//前台需要
 
 	public void setNewPwd(String newPwd) {
 		this.newPwd = newPwd == null ? null : newPwd.trim();
@@ -207,5 +208,13 @@ public class UcUser implements Serializable {
 
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+	public Integer getKey() {
+		return key;
+	}
+
+	public void setKey(Integer key) {
+		this.key = key;
 	}
 }
