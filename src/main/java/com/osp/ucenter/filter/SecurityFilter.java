@@ -51,7 +51,6 @@ public class SecurityFilter implements Filter {
 		restApp.put("/user/register", 1);
 		restApp.put("/user/auth", 1);
 		restApp.put("/user/toLogin", 1);
-		
 	}
 	
 	public Integer getRestApiValue(String rest) {

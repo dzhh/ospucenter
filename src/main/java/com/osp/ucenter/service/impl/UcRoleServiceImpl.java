@@ -49,13 +49,6 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		return super.findPage(resultMap, pageNo, pageSize);
 	}
 
-	/*
-	 * @Override public Pagination<RolePermissionAllocationBo>
-	 * findRoleAndPermissionPage( Map<String, Object> resultMap, Integer pageNo,
-	 * Integer pageSize) { return super.findPage("findRoleAndPermission",
-	 * "findCount", resultMap, pageNo, pageSize); }
-	 */
-
 	@Override
 	public int deleteByPrimaryKey(Integer id) {
 		return ucRoleMapper.deleteByPrimaryKey(id);
@@ -156,8 +149,8 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 			}
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
 			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
-				if (ucPermissionMenuActionBo.getMenuUrl().equals(uri)
-						|| ucPermissionMenuActionBo.getActionCode().equals(uri)) {
+				if ((ucPermissionMenuActionBo.getMenuUrl()!=null&&ucPermissionMenuActionBo.getMenuUrl().equals(uri))
+						|| (ucPermissionMenuActionBo.getActionCode()!=null&&ucPermissionMenuActionBo.getActionCode().equals(uri))) {
 					flag = true;
 					break;
 				}
