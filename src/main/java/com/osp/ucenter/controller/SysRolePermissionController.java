@@ -142,10 +142,10 @@ public class SysRolePermissionController {
 	 */
 	@RequestMapping(value = "clearPermissionByRoleIds", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String clearPermissionByRoleIds(String roleIds) {
+	public String clearPermissionByRoleIds(@RequestBody CommonRequestBody commonRequestBody) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			if (ucPermissionService.deleteByRids(roleIds).get("status").equals("200")) {
+			if (ucPermissionService.deleteByRids(commonRequestBody.getIds()).get("status").equals("200")) {
 				ro.setOspState(200);
 			} else {
 				ro.setOspState(500);
@@ -164,7 +164,10 @@ public class SysRolePermissionController {
 		}
 	}
 
-	
+	/**
+	 * 
+	 * @param ro
+	 */
 	public void getUcRolePermissionAllocation(ResponseObject ro) {
 		try {
 			List<UcRolePermissionAllocationBo> ucRolePermissionAllocationBos = ucRoleService
@@ -182,10 +185,8 @@ public class SysRolePermissionController {
 	public void getUcPermissionMenuAction(ResponseObject ro) {
 		try {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucPermissionService.selectPermissions();
-			ro.setValue("permissionList", ucPermissionMenuActionBos);
 			String result = "";
 			for(UcPermissionMenuActionBo ucPermissionMenuActionBo:ucPermissionMenuActionBos){
-				ucPermissionMenuActionBo.setValue(Integer.toString(ucPermissionMenuActionBo.getPermissionId()));
 				if(ucPermissionMenuActionBo.getMenuId()!=null){
 					ucPermissionMenuActionBo.setLabel(ucPermissionMenuActionBo.getMenuName());
 				}else if(ucPermissionMenuActionBo.getActionId()!=null){
@@ -196,6 +197,7 @@ public class SysRolePermissionController {
 			if (result.length() > 1) {
 				result = result.substring(0, result.length() - 1);
 			}
+			ro.setValue("permissionLists", ucPermissionMenuActionBos);
 			ro.setValue("allPermissionIds", result);
 		} catch (Exception e) {
 			throw e;
