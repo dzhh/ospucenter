@@ -175,10 +175,21 @@ public class SysPermissionController {
 		}
 	}
 
+	/**
+	 * 权限列表
+	 * @param ro
+	 */
 	public void getUcPermissionMenuAction(ResponseObject ro) {
 		try {
-			List<UcPermissionMenuActionBo> ucPermissionMenuActionBo = ucPermissionService.selectPermissions();
-			ro.setValue("permissionList", ucPermissionMenuActionBo);
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucPermissionService.selectPermissions();
+			for(UcPermissionMenuActionBo ucPermissionMenuActionBo:ucPermissionMenuActionBos){
+				if(ucPermissionMenuActionBo.getMenuId()!=null){
+					ucPermissionMenuActionBo.setLabel(ucPermissionMenuActionBo.getMenuName());
+				}else if(ucPermissionMenuActionBo.getActionId()!=null){
+					ucPermissionMenuActionBo.setLabel(ucPermissionMenuActionBo.getActionName());
+				}
+			}
+			ro.setValue("permissionLists", ucPermissionMenuActionBos);
 		} catch (Exception e) {
 			throw e;
 		}
