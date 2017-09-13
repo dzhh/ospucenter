@@ -84,6 +84,7 @@ public class SysRolePermissionController {
 				result = result.substring(0, result.length() - 1);
 			}
 			ro.setValue("defaultValue", result);
+			this.getUcPermissionMenuAction(ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -184,6 +185,12 @@ public class SysRolePermissionController {
 			ro.setValue("permissionList", ucPermissionMenuActionBos);
 			String result = "";
 			for(UcPermissionMenuActionBo ucPermissionMenuActionBo:ucPermissionMenuActionBos){
+				ucPermissionMenuActionBo.setValue(Integer.toString(ucPermissionMenuActionBo.getPermissionId()));
+				if(ucPermissionMenuActionBo.getMenuId()!=null){
+					ucPermissionMenuActionBo.setLabel(ucPermissionMenuActionBo.getMenuName());
+				}else if(ucPermissionMenuActionBo.getActionId()!=null){
+					ucPermissionMenuActionBo.setLabel(ucPermissionMenuActionBo.getActionName());
+				}
 				result += ucPermissionMenuActionBo.getPermissionId() + ",";
 			}
 			if (result.length() > 1) {

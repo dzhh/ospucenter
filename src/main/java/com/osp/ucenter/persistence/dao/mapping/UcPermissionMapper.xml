@@ -17,7 +17,7 @@
   </select>
   <!-- 取得权限列表所有数据 -->
   <select id="selectPermissions" parameterType="java.lang.Integer" resultType="com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo">
-    select  p.Permission_id PermissionId,p.Permission_Type permissionType,p.Menu_id menuId,p.Action_id actionId,m.menu_name menuName,m.menu_url menuUrl,
+    select  p.Permission_id PermissionId,p.Permission_id value,p.Permission_Type permissionType,p.Menu_id menuId,p.Action_id actionId,m.menu_name menuName,m.menu_url menuUrl,
         a.action_Name actionName,a.action_Code actionCode  from
 	 uc_permission p
 	left join uc_menu m on m.menu_id = p.Menu_id
