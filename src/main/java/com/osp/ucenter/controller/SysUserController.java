@@ -23,7 +23,9 @@ import com.osp.ucenter.manager.UserManager;
 import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.model.UcUser;
+import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
+import com.osp.ucenter.service.impl.MyPermissionRedisServiceImpl;
 import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
@@ -40,9 +42,15 @@ public class SysUserController {
 
 	@Autowired
 	private RedisServiceImpl redisServiceImpl;
+	
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	@Autowired
 	private HttpServletRequest request;
+	
+	@Autowired
+	private UcRoleService ucRoleService;
 
 	/**
 	 * 禁止登陆 前台需要传递参数 Pagination.ids
@@ -125,7 +133,7 @@ public class SysUserController {
 	 */
 	@RequestMapping(value = "/deleteUser", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
-	public String deleteRoleById(@RequestBody Pagination<UcUser> pagination) {
+	public String deleteUser(@RequestBody Pagination<UcUser> pagination) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			Map<String, Object> data = ucUserService.deleteUserById(pagination.getIds());
@@ -159,9 +167,6 @@ public class SysUserController {
 				if (i >= start && i < end) {
 					Object jwtUser = redisServiceImpl.get(jwtToken);
 					JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
-					// 暂存jwtToken信息，不存签名部分
-					// jwtUserBean.setJwtToken(jwtToken.substring(0,
-					// jwtToken.lastIndexOf('.')));
 					lists.add(jwtUserBean);
 					i++;
 				} else {

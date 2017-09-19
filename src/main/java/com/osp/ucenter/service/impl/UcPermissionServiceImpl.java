@@ -16,11 +16,8 @@ import com.osp.ucenter.persistence.bo.UcPermissionBo;
 import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.dao.UcActionMapper;
 import com.osp.ucenter.persistence.dao.UcMenuMapper;
-import com.osp.ucenter.persistence.dao.UcPermissionActionMapper;
 import com.osp.ucenter.persistence.dao.UcPermissionMapper;
 import com.osp.ucenter.persistence.dao.UcRolePermissionMapper;
-import com.osp.ucenter.persistence.dao.UcUserMapper;
-import com.osp.ucenter.persistence.dao.UcUserRoleMapper;
 import com.osp.ucenter.persistence.model.UcMenu;
 import com.osp.ucenter.persistence.model.UcPermission;
 import com.osp.ucenter.persistence.model.UcRolePermission;
@@ -36,25 +33,17 @@ import com.osp.ucenter.service.UcPermissionService;
 public class UcPermissionServiceImpl extends BaseMybatisDao<UcPermissionMapper> implements UcPermissionService {
 
 	@Autowired
-	UcPermissionMapper ucPermissionMapper;
+	private UcPermissionMapper ucPermissionMapper;
 
 	@Autowired
-	UcMenuMapper ucMenuMapper;
+	private UcMenuMapper ucMenuMapper;
 
 	@Autowired
-	UcActionMapper ucActionMapper;
+	private UcActionMapper ucActionMapper;
 
 	@Autowired
-	UcPermissionActionMapper ucPermissionActionMapper;
+	private UcRolePermissionMapper ucRolePermissionMapper;
 
-	@Autowired
-	UcUserMapper ucUserMapper;
-
-	@Autowired
-	UcRolePermissionMapper ucRolePermissionMapper;
-
-	@Autowired
-	UcUserRoleMapper ucUserRoleMapper;
 
 	/**
 	 * 删除权限：因为菜单与权限与操作是1v1关系，所以要删除菜单

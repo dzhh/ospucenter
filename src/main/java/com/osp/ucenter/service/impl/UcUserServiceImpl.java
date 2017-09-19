@@ -18,8 +18,10 @@ import com.osp.ucenter.persistence.bo.UcRoleBo;
 import com.osp.ucenter.persistence.bo.UserRoleAllocationBo;
 import com.osp.ucenter.persistence.dao.UcUserMapper;
 import com.osp.ucenter.persistence.dao.UcUserRoleMapper;
+import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.persistence.model.UcUserRole;
+import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
 
 /**
@@ -40,6 +42,12 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 
 	@Autowired
 	private RedisServiceImpl redisServiceImpl;
+
+	@Autowired
+	private UcRoleService ucRoleService;
+
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	@Override
 	public Pagination<UserRoleAllocationBo> findUserAndRole(Map<String, Object> modelMap, Integer pageNo,
@@ -111,7 +119,10 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 					errorCount += ucUserRoles.size();
 				} else {
 					shotOffOnlineUser(this.selectByPrimaryKey(userId));
-					successCount += this.deleteByPrimaryKey(new Integer(userId));
+					successCount += this.deleteByPrimaryKey(userId);
+					if (myPermissionRedisServiceImpl.isKeyExists(idx) == true) {
+						myPermissionRedisServiceImpl.remove(idx);
+					}
 				}
 			}
 			// 如果有成功的，也有失败的，提示清楚。
@@ -160,8 +171,9 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 			data.put("ucUserRole", "操作失败，请重试！");
 			e.printStackTrace();
 		}
-		// 清空用户的权限，迫使再次获取权限的时候，得重新加载
-		// TokenManager.clearUserAuthByUserId(userId);
+		// 更新redis里面存的我的权限
+		List<UcRole> ucRoles = ucRoleService.findAllPermissionByUser(userId);
+		myPermissionRedisServiceImpl.put(userId.toString(), ucRoles, -1);
 		return data;
 	}
 
@@ -181,6 +193,9 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 			}
 			for (String id : idArray) {
 				ucUserRoleMapper.deleteByUserId(new Integer(id));
+				if (myPermissionRedisServiceImpl.isKeyExists(id) == true) {
+					myPermissionRedisServiceImpl.remove(id);
+				}
 			}
 			data.put("status", 200);
 		} catch (Exception e) {
@@ -199,7 +214,7 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	 * 禁止用户登录:如果当前用户在线，踢出
 	 */
 	@Override
-	public Map<String, Object> updateForbidUserById(Integer id,Integer status) {
+	public Map<String, Object> updateForbidUserById(Integer id, Integer status) {
 		Map<String, Object> data = new HashMap<String, Object>();
 		try {
 			UcUser ucuser = this.selectByPrimaryKey(id);
@@ -220,9 +235,9 @@ public class UcUserServiceImpl extends BaseMybatisDao<UcUserMapper> implements U
 	@Override
 	public Map<String, Object> shotOffOnlineUser(UcUser ucUser) {
 		for (String jwtToken : redisServiceImpl.getKeys()) {
-			Object jwtUser= redisServiceImpl.get(jwtToken);
+			Object jwtUser = redisServiceImpl.get(jwtToken);
 			JWTUserBean tempUser = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
-			if (tempUser.getUserId()==ucUser.getUserId()){
+			if (tempUser.getUserId() == ucUser.getUserId()) {
 				redisServiceImpl.remove(jwtToken);
 			}
 		}

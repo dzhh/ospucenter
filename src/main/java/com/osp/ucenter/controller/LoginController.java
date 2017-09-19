@@ -1,5 +1,7 @@
 package com.osp.ucenter.controller;
 
+import java.util.List;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.DisabledAccountException;
@@ -20,9 +22,11 @@ import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.jwt.JwtHelper;
 import com.osp.ucenter.manager.UserManager;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
+import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
+import com.osp.ucenter.service.impl.MyPermissionRedisServiceImpl;
 import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
@@ -35,13 +39,16 @@ import com.osp.ucenter.service.impl.RedisServiceImpl;
 @RequestMapping(value = "/user")
 public class LoginController {
 	@Autowired
-	UcUserService ucUserService;
-	
+	private UcUserService ucUserService;
+
 	@Autowired
-	UcRoleService ucRoleService;
+	private UcRoleService ucRoleService;
 
 	@Autowired
 	private RedisServiceImpl redisServiceImpl;
+
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	@ResponseBody
 	@RequestMapping(value = "/login", method = { RequestMethod.GET, RequestMethod.POST })
@@ -58,6 +65,9 @@ public class LoginController {
 				JWTUserBean jwtUserBean = organizeJWTUserBean(ucUser);
 				ro.setToken(jwtUserBean.getJwtToken());
 				ro.setOspState(200);
+				// 获取我的权限，将我的权限存到redis里面
+				List<UcRole> ucRoles = ucRoleService.findAllPermissionByUser(ucUser.getUserId());
+				myPermissionRedisServiceImpl.put(ucUser.getUserId().toString(), ucRoles, -1);
 				// 获取 菜单
 				ro.setValue("menuTrees", ucRoleService.getMenuTrees(ucUser.getUserId()));
 				ro.setValue("ucUser", ucUser);
@@ -80,7 +90,8 @@ public class LoginController {
 	}
 
 	/**
-	 * 目前根据前台要求  用户注册后，需要重新登陆
+	 * 目前根据前台要求 用户注册后，需要重新登陆
+	 * 
 	 * @param user
 	 * @return
 	 */
@@ -103,9 +114,6 @@ public class LoginController {
 				LoggerUtils.fmtDebug(getClass(), "注册插入完毕！", user.toString());
 				if (user != null) {
 					ro.setOspState(200);
-					//JWTUserBean jwtUserBean = organizeJWTUserBean(user);				
-					//ro.setToken(jwtUserBean.getJwtToken());
-					//ro.setValue("ucUser", user);
 				}
 			} else {
 				ro.setOspState(500);
@@ -155,7 +163,6 @@ public class LoginController {
 		ro.setValue("msg", "对不起，您没有权限，请联系管理员！");
 		return JsonUtil.beanToJson(ro);
 	}
-	
 
 	@ResponseBody
 	@RequestMapping(value = "/toLogin", method = { RequestMethod.GET, RequestMethod.POST })
@@ -166,5 +173,5 @@ public class LoginController {
 		ro.setValue("msg", "没有登录，请先登录！");
 		return JsonUtil.beanToJson(ro);
 	}
-	
+
 }

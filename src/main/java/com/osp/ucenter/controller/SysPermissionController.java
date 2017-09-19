@@ -3,6 +3,8 @@ package com.osp.ucenter.controller;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -16,9 +18,14 @@ import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.bo.CommonRequestBody;
+import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.model.UcMenu;
+import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.service.UcPermissionService;
+import com.osp.ucenter.service.UcRoleService;
+import com.osp.ucenter.service.impl.MyPermissionRedisServiceImpl;
+import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
  * 权限控制类
@@ -32,6 +39,18 @@ public class SysPermissionController {
 
 	@Autowired
 	UcPermissionService ucPermissionService;
+	
+	@Autowired
+	private UcRoleService ucRoleService;
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private RedisServiceImpl redisServiceImpl;
+	
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	/**
 	 * 菜单列表
@@ -160,8 +179,9 @@ public class SysPermissionController {
 				ro.setOspState(200);
 			} else {
 				ro.setOspState(500);
-				ro.setValue("msg", "删除权限失败！");
+				ro.setValue("msg", ro.getData().get("ucRolePermission"));
 			}
+			this.updateRedis();
 			this.getUcPermissionMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -207,6 +227,17 @@ public class SysPermissionController {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	/**
+	 * 维护redis我的权限
+	 */
+	public void  updateRedis(){
+		String osptoken = request.getHeader("token");
+		Object jwtUser = redisServiceImpl.get(osptoken);
+		JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
+		List<UcRole> ucRoles = ucRoleService.findAllPermissionByUser(jwtUserBean.getUserId());
+		myPermissionRedisServiceImpl.put(jwtUserBean.getUserId().toString(), ucRoles, -1);
 	}
 
 }

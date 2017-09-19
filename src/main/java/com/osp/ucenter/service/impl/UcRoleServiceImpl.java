@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.utils.LoggerUtils;
 import com.osp.ucenter.mybatis.BaseMybatisDao;
 import com.osp.ucenter.mybatis.page.Pagination;
@@ -19,6 +20,7 @@ import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
 import com.osp.ucenter.persistence.dao.UcRoleMapper;
 import com.osp.ucenter.persistence.dao.UcUserRoleMapper;
+import com.osp.ucenter.persistence.model.UcAction;
 import com.osp.ucenter.persistence.model.UcMenu;
 import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.service.UcRoleService;
@@ -34,10 +36,13 @@ import com.osp.ucenter.service.UcRoleService;
 public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements UcRoleService {
 
 	@Autowired
-	UcRoleMapper ucRoleMapper;
+	private UcRoleMapper ucRoleMapper;
 
 	@Autowired
-	UcUserRoleMapper ucUserRoleMapper;
+	private UcUserRoleMapper ucUserRoleMapper;
+	
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	@Override
 	public int findCount() {
@@ -107,6 +112,9 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 				} else {
 					count += this.deleteByPrimaryKey(id);
 					ucUserRoleMapper.deleteByRoleId(id);
+					// 更新redis里面存的我的权限
+					List<UcRole> ucRoles = this.findAllPermissionByUser(id);
+					myPermissionRedisServiceImpl.put(idx, ucRoles, -1);
 				}
 			}
 			resultMap.put("count", count);
@@ -138,24 +146,27 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		return ucRoleMapper.selectPermissionByRoleIds();
 	}
 
+	/**
+	 * 判断用户是否有调用uri接口权限 返回值0代表没权限，返回值1为菜单权限，返回值2为操作权限
+	 */
 	@Override
-	public Boolean hasPermission(Integer userId, String uri) {
-		Boolean flag = false;
-		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
+	public int hasPermission(Integer userId, String uri) {
+		int flag = 0;
+		List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(userId.toString())), UcRole.class);
 		for (UcRole ucRole : ucRoles) {
-			if (ucRole.getRoleId() == 1) {// 超级管理员拥有所有权限
-				flag = true;
-				break;
-			}
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
 			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
-				if ((ucPermissionMenuActionBo.getMenuUrl()!=null&&ucPermissionMenuActionBo.getMenuUrl().equals(uri))
-						|| (ucPermissionMenuActionBo.getActionCode()!=null&&ucPermissionMenuActionBo.getActionCode().equals(uri))) {
-					flag = true;
+				if (ucPermissionMenuActionBo.getMenuUrl() != null
+						&& ucPermissionMenuActionBo.getMenuUrl().equals(uri)) {
+					flag = 1;
+					break;
+				} else if (ucPermissionMenuActionBo.getActionCode() != null
+						&& ucPermissionMenuActionBo.getActionCode().equals(uri)) {
+					flag = 2;
 					break;
 				}
 			}
-			if (flag == true) {
+			if (flag != 0) {
 				break;
 			}
 		}
@@ -168,7 +179,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 	public Set<UcMenu> getMenuTrees(Integer userId) {
 		Set<UcMenu> ucMenus = new LinkedHashSet<UcMenu>();
 		Set<UcMenu> trees = new LinkedHashSet<UcMenu>();
-		List<UcRole> ucRoles = this.findAllPermissionByUser(userId);
+		List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(userId.toString())), UcRole.class);
 		for (UcRole ucRole : ucRoles) {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
 			for (UcPermissionMenuActionBo menuBo : ucPermissionMenuActionBos) {
@@ -195,6 +206,44 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 				organizingMenuTree(tempMenu, ucMenus);
 			}
 		}
+	}
+
+	/**
+	 * 取得当前菜单的所有操作权限
+	 */
+	@Override
+	public Set<UcAction> getActionTrees(Integer userId, String menuUrl) {
+		Set<UcAction> ucActions = new LinkedHashSet<UcAction>();
+		Set<UcAction> trees = new LinkedHashSet<UcAction>();
+		List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(userId.toString())), UcRole.class);
+		for (UcRole ucRole : ucRoles) {
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
+			for (UcPermissionMenuActionBo actionBo : ucPermissionMenuActionBos) {
+				if (actionBo.getActionId() != null && actionBo.getActionPreventUrl().equals(menuUrl)) {
+					UcAction ucAction = new UcAction(actionBo.getActionId(), actionBo.getActionName(),
+							actionBo.getActionCode(), actionBo.getActionParent(), actionBo.getActionPreventUrl());
+					ucActions.add(ucAction);
+					if (actionBo.getActionParent() == null) {
+						trees.add(ucAction);
+					}
+				}
+			}
+		}
+
+		for (UcAction ucAction : trees) {
+			this.organizingActionTree(ucAction, ucActions);
+		}
+		return trees;
+	}
+
+	public void organizingActionTree(UcAction ucAction, Set<UcAction> ucActions) {
+		for (UcAction tempAction : ucActions) {
+			if (tempAction.getActionParent() != null && ucAction.getActionId() == tempAction.getActionParent()) {
+				ucAction.getChildren().add(tempAction);
+				organizingActionTree(tempAction, ucActions);
+			}
+		}
+
 	}
 
 }

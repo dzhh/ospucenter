@@ -21,6 +21,7 @@ import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.persistence.model.UcUser;
 import com.osp.ucenter.service.UcRoleService;
+import com.osp.ucenter.service.impl.MyPermissionRedisServiceImpl;
 
 /**
  * 用户角色管理
@@ -34,6 +35,9 @@ public class SysRoleController {
 
 	@Autowired
 	UcRoleService ucRoleService;
+	
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	/**
 	 * 角色列表
@@ -151,9 +155,9 @@ public class SysRoleController {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			// 查询我所有的角色 ---> 权限
-			List<UcRole> roles = ucRoleService.findAllPermissionByUser(ucUser.getUserId());
+			List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(ucUser.getUserId().toString())), UcRole.class);
 			ro.setOspState(200);
-			ro.setValue("myPermission", roles);
+			ro.setValue("myPermission", ucRoles);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);

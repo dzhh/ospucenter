@@ -20,7 +20,6 @@ import com.osp.ucenter.persistence.bo.UcRoleBo;
 import com.osp.ucenter.persistence.bo.UserRoleAllocationBo;
 import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.persistence.model.UcUser;
-import com.osp.ucenter.service.UcPermissionService;
 import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
 
@@ -29,13 +28,10 @@ import com.osp.ucenter.service.UcUserService;
 @RequestMapping("/userRole")
 public class SysUserRoleController {
 	@Autowired
-	UcUserService ucUserService;
+	private UcUserService ucUserService;
 
 	@Autowired
-	UcRoleService ucRoleService;
-
-	@Autowired
-	UcPermissionService ucPermissionService;
+	private UcRoleService ucRoleService;
 
 	/**
 	 * 用户角色关系列表

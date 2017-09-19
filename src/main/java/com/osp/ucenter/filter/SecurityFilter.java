@@ -29,11 +29,11 @@ import com.osp.ucenter.service.impl.RedisServiceImpl;
  *
  */
 public class SecurityFilter implements Filter {
-	
+
 	@Autowired
 	private RedisServiceImpl redisServiceImpl;
-	
-	@Autowired 
+
+	@Autowired
 	UcRoleService ucRoleService;
 
 	Logger logger = Logger.getLogger(SecurityFilter.class);
@@ -45,56 +45,57 @@ public class SecurityFilter implements Filter {
 	}
 
 	public static Map<String, Integer> restApp = new HashMap<String, Integer>();
-	
+
 	static {
 		restApp.put("/user/login", 1);
 		restApp.put("/user/register", 1);
 		restApp.put("/user/auth", 1);
 		restApp.put("/user/toLogin", 1);
 	}
-	
+
 	public Integer getRestApiValue(String rest) {
-		if(restApp.containsKey(rest)) {
+		if (restApp.containsKey(rest)) {
 			return restApp.get(rest);
-		} else if(rest.endsWith("ico")) {
+		} else if (rest.endsWith("ico")) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
-	
+
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 		String uri = request.getRequestURI();
-		System.out.println("================="+uri+"==================");
 		/**
 		 * 不需要验证的
 		 */
-		if(this.getRestApiValue(uri) == 1){
+		if (this.getRestApiValue(uri) == 1) {
 			chain.doFilter(request, response);
-			return ;
+			return;
 		}
 		// 1. 检查用户是否已登录 Tocken JWT
 		String osptoken = request.getHeader("token");
 		// 2. 没登录，登录去
-		if(osptoken==null||osptoken.equals("")||redisServiceImpl.isKeyExists(osptoken)==false) {
-			request.getRequestDispatcher("/user/toLogin").forward(request, response);	
-			return ;
+		if (osptoken == null || osptoken.equals("") || redisServiceImpl.isKeyExists(osptoken) == false) {
+			request.getRequestDispatcher("/user/toLogin").forward(request, response);
+			return;
 		}
-		Object jwtUser= redisServiceImpl.get(osptoken);
+		Object jwtUser = redisServiceImpl.get(osptoken);
 		JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
-		jwtUserBean.setLastActionTime(BaseUtils.getCurrentTime());//更新会话最后活动时间
+		jwtUserBean.setLastActionTime(BaseUtils.getCurrentTime());// 更新会话最后活动时间
 		redisServiceImpl.put(osptoken, jwtUserBean, 3600);
-
-		// 4. 判断用户是否有访问此资源的权限
-		Boolean flag = ucRoleService.hasPermission(jwtUserBean.getUserId(), uri);
-	    if(flag==false){
-	    	request.getRequestDispatcher("/user/auth").forward(request, response);	
-			return ;
-	    }
+		// 3. 判断用户是否有访问此资源的权限，并判断此资源属于菜单权限还是操作权限,如果此资源属于菜单权限需要取得此菜单的所有操作权限
+		int flag = ucRoleService.hasPermission(jwtUserBean.getUserId(), uri);
+		if (flag == 0) {
+			request.getRequestDispatcher("/user/auth").forward(request, response);
+			return;
+		} else if (flag == 1) {
+			// 4.如果此url是调用菜单接口 ，取得此菜单的所有操作权限
+			request.setAttribute("menuActions", ucRoleService.getActionTrees(jwtUserBean.getUserId(),uri));
+		}
 		logger.info("=============SecurityFilter dofilter=============");
 		chain.doFilter(request, response);
 	}

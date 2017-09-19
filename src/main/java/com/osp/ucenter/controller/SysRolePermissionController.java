@@ -3,6 +3,8 @@ package com.osp.ucenter.controller;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -15,11 +17,15 @@ import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.exception.MyRuntimeException;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.persistence.bo.CommonRequestBody;
+import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.bo.UcPermissionBo;
 import com.osp.ucenter.persistence.bo.UcPermissionMenuActionBo;
 import com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo;
+import com.osp.ucenter.persistence.model.UcRole;
 import com.osp.ucenter.service.UcPermissionService;
 import com.osp.ucenter.service.UcRoleService;
+import com.osp.ucenter.service.impl.MyPermissionRedisServiceImpl;
+import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
  * 角色权限分配
@@ -33,8 +39,18 @@ public class SysRolePermissionController {
 
 	@Autowired
 	UcPermissionService ucPermissionService;
+	
 	@Autowired
 	UcRoleService ucRoleService;
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private RedisServiceImpl redisServiceImpl;
+	
+	@Autowired
+	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	/**
 	 * 权限分配
@@ -120,6 +136,7 @@ public class SysRolePermissionController {
 				ro.setValue("msg", "操作角色的权限失败!");
 				ro.setOspState(500);
 			}
+			this.updateRedis();
 			this.getUcRolePermissionAllocation(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -151,6 +168,7 @@ public class SysRolePermissionController {
 				ro.setOspState(500);
 				ro.setValue("msg", "清空角色权限失败！");
 			}
+			this.updateRedis();
 			this.getUcRolePermissionAllocation(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -205,5 +223,16 @@ public class SysRolePermissionController {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	/**
+	 * 维护redis我的权限
+	 */
+	public void  updateRedis(){
+		String osptoken = request.getHeader("token");
+		Object jwtUser = redisServiceImpl.get(osptoken);
+		JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
+		List<UcRole> ucRoles = ucRoleService.findAllPermissionByUser(jwtUserBean.getUserId());
+		myPermissionRedisServiceImpl.put(jwtUserBean.getUserId().toString(), ucRoles, -1);
 	}
 }

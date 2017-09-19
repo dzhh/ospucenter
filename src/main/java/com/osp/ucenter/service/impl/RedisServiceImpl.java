@@ -13,7 +13,8 @@ import com.osp.ucenter.redis.IRedisService;
 public class RedisServiceImpl extends IRedisService<JWTUserBean>{
     private static final String REDIS_KEY = "OSPJWT";
 
-    @Override
+    @SuppressWarnings("static-access")
+	@Override
     protected String getRedisKey() {
         return this.REDIS_KEY;
     }
