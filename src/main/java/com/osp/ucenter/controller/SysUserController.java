@@ -160,8 +160,8 @@ public class SysUserController {
 				if (i >= start && i < end) {
 					Object jwtUser = redisServiceImpl.get(jwtToken);
 					JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
-					lists.add(jwtUserBean);
-					i++;
+					jwtUserBean.setKey(++i);
+					lists.add(jwtUserBean);		
 				} else {
 					break;
 				}

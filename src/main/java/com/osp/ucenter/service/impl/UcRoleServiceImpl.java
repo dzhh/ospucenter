@@ -157,11 +157,11 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(ucRole.getPermissions()), UcPermissionMenuActionBo.class);
 			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
 				if (ucPermissionMenuActionBo.getMenuUrl() != null
-						&& ucPermissionMenuActionBo.getMenuUrl().equals(uri)) {
+						&& uri.indexOf(ucPermissionMenuActionBo.getMenuUrl())!=-1) {
 					flag = 1;
 					break;
 				} else if (ucPermissionMenuActionBo.getActionCode() != null
-						&& ucPermissionMenuActionBo.getActionCode().equals(uri)) {
+						&& uri.indexOf(ucPermissionMenuActionBo.getActionCode())!=-1) {
 					flag = 2;
 					break;
 				}
@@ -219,7 +219,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		for (UcRole ucRole : ucRoles) {
 			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(ucRole.getPermissions()), UcPermissionMenuActionBo.class);
 			for (UcPermissionMenuActionBo actionBo : ucPermissionMenuActionBos) {
-				if (actionBo.getActionId() != 0 && actionBo.getActionPreventUrl().equals(menuUrl)) {
+				if (actionBo.getActionId() != 0 && menuUrl.indexOf(actionBo.getActionPreventUrl())!=-1) {
 					UcAction ucAction = new UcAction(actionBo.getActionId(), actionBo.getActionName(),
 							actionBo.getActionCode(), actionBo.getActionParent(), actionBo.getActionPreventUrl());
 					ucActions.add(ucAction);
@@ -235,7 +235,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		}
 		return trees;
 	}
-
+	
 	public void organizingActionTree(UcAction ucAction, Set<UcAction> ucActions) {
 		for (UcAction tempAction : ucActions) {
 			if (tempAction.getActionParent() != 0 && ucAction.getActionId() == tempAction.getActionParent()) {
