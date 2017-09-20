@@ -18,7 +18,9 @@ public interface UcRolePermissionMapper {
 	List<UcRolePermission> find(UcRolePermission entity);
 	
 	int deleteByPid(Integer id);
+	
 	int deleteByRid(@Param("roleid") Integer roleid);
+	
 	int delete(UcRolePermission entity);
 
 	int deleteByRids(@Param("roleIds") String[] roleIds);

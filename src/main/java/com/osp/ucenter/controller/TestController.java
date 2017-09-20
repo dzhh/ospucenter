@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RefreshScope
 @RestController
 public class TestController {
-
 	@Value("${app}")
 	private String app;
 

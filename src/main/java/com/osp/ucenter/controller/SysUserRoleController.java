@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -32,6 +34,9 @@ public class SysUserRoleController {
 
 	@Autowired
 	private UcRoleService ucRoleService;
+	
+	@Autowired
+	private HttpServletRequest request; 
 
 	/**
 	 * 用户角色关系列表
@@ -47,6 +52,7 @@ public class SysUserRoleController {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
 			this.getUserRoleLists(pagination, ro);
+			this.SetMenuAction(ro);
 			ro.setOspState(200);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
@@ -224,5 +230,13 @@ public class SysUserRoleController {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	/**
+	 * 取得此用户当前菜单的操作权限树
+	 * @param ro
+	 */
+	public void SetMenuAction(ResponseObject ro){
+		ro.setValue("menuActions", request.getAttribute("menuActions"));
 	}
 }

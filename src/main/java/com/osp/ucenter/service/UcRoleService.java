@@ -12,13 +12,13 @@ import com.osp.ucenter.persistence.model.UcMenu;
 import com.osp.ucenter.persistence.model.UcRole;
 
 public interface UcRoleService {
+	
 	int deleteByPrimaryKey(Integer id);
 
 	int insert(UcRole ucRole);
 	
 	int findCount();
-
-	// 插入一条数据,只插入不为null的字段,不会影响有默认值的字段,优先使用传入的参数值,参数值空时,才会使用序列、UUID,自动增长
+	
 	int insertSelective(UcRole ucRole);
     
 	ArrayList<UcRole> selectAllRoles();
@@ -35,7 +35,6 @@ public interface UcRoleService {
 
 	List<UcRolePermissionAllocationBo> selectPermissionByRoleIds();
 
-	// 根据用户ID查询角色（role），放入到Authorization里。
 	Set<String> findRoleByUserId(Long userId);
 	
 	List<UcRole> findAllPermissionByUser(Integer userId);

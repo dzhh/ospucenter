@@ -88,6 +88,7 @@ public class SysPermissionController {
 		try {
 			this.getUcPermissionMenuAction(ro);
 			ro.setOspState(200);
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -238,6 +239,14 @@ public class SysPermissionController {
 		JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
 		List<UcRole> ucRoles = ucRoleService.findAllPermissionByUser(jwtUserBean.getUserId());
 		myPermissionRedisServiceImpl.put(jwtUserBean.getUserId().toString(), ucRoles, -1);
+	}
+	
+	/**
+	 * 取得此用户当前菜单的操作权限树
+	 * @param ro
+	 */
+	public void SetMenuAction(ResponseObject ro){
+		ro.setValue("menuActions", request.getAttribute("menuActions"));
 	}
 
 }

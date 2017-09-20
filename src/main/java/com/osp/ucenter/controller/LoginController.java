@@ -19,7 +19,7 @@ import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.model.ResponseObject;
 import com.osp.ucenter.common.utils.BaseUtils;
 import com.osp.ucenter.common.utils.LoggerUtils;
-import com.osp.ucenter.jwt.JwtHelper;
+import com.osp.ucenter.jwt.JwtUtil;
 import com.osp.ucenter.manager.UserManager;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.model.UcRole;
@@ -38,6 +38,7 @@ import com.osp.ucenter.service.impl.RedisServiceImpl;
 @Scope(value = "prototype")
 @RequestMapping(value = "/user")
 public class LoginController {
+	
 	@Autowired
 	private UcUserService ucUserService;
 
@@ -143,14 +144,11 @@ public class LoginController {
 	 * @return
 	 */
 	public JWTUserBean organizeJWTUserBean(UcUser ucUser) throws Exception {
-		// 过期时间 1小时
-		long expire = 3600;
-		// 拼装accessToken MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
-		String accessToken = JwtHelper.createJWT(ucUser.getUserName(), expire * 1000);
+		String accessToken = JwtUtil.generateToken(ucUser.getUserName());
 		JWTUserBean jwtUserBean = new JWTUserBean(ucUser);
 		jwtUserBean.setCreateJWTTime(ucUser.getLastLoginTime());
 		jwtUserBean.setJwtToken(accessToken);
-		redisServiceImpl.put(accessToken, jwtUserBean, expire);
+		redisServiceImpl.put(accessToken, jwtUserBean, JwtUtil.getEXPIRATION_TIME());
 		return jwtUserBean;
 	}
 

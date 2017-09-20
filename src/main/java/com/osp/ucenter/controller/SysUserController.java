@@ -23,9 +23,7 @@ import com.osp.ucenter.manager.UserManager;
 import com.osp.ucenter.mybatis.page.Pagination;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.persistence.model.UcUser;
-import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.UcUserService;
-import com.osp.ucenter.service.impl.MyPermissionRedisServiceImpl;
 import com.osp.ucenter.service.impl.RedisServiceImpl;
 
 /**
@@ -44,13 +42,7 @@ public class SysUserController {
 	private RedisServiceImpl redisServiceImpl;
 	
 	@Autowired
-	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
-
-	@Autowired
-	private HttpServletRequest request;
-	
-	@Autowired
-	private UcRoleService ucRoleService;
+	private HttpServletRequest request; 
 
 	/**
 	 * 禁止登陆 前台需要传递参数 Pagination.ids
@@ -114,6 +106,7 @@ public class SysUserController {
 		try {
 			this.getUserLists(pagination, ro);
 			ro.setOspState(200);
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -176,6 +169,7 @@ public class SysUserController {
 			pagination.setList(lists);
 			ro.setValue("ucUser", pagination.getList());
 			ro.setOspState(200);
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -209,6 +203,7 @@ public class SysUserController {
 				ro.setValue("ucUser", ucUser);
 			}
 			ro.setOspState(200);
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -251,6 +246,7 @@ public class SysUserController {
 			ro.setOspState(200);
 			UcUser ucUser = TokenAuth.getUser(user.getUserId());
 			ro.setValue("ucUser", ucUser);
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -284,6 +280,7 @@ public class SysUserController {
 				ro.setOspState(500);
 				ro.setValue("msg", "获取用户信息失败！");
 			}
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -365,32 +362,12 @@ public class SysUserController {
 		}
 	}
 	
-	
 	/**
-	 * 用户列表
-	 * 
-	 * @return
+	 * 取得此用户当前菜单的操作权限树
+	 * @param ro
 	 */
-	@ResponseBody
-	@RequestMapping(value = "/userList", method = { RequestMethod.GET, RequestMethod.POST })
-	public String userList() {
-		ResponseObject ro = ResponseObject.getInstance();
-		Pagination<UcUser> pagination = new Pagination<UcUser>();
-		pagination.setPageNo(1);
-		pagination.setPageSize(20);
-		try {
-			this.getUserLists(pagination, ro);
-			ro.setOspState(200);
-			return JsonUtil.beanToJson(ro);
-		} catch (MyRuntimeException e) {
-			ro.setOspState(400);
-			ro.setValue("msg", "服务器出现异常！");
-			return JsonUtil.beanToJson(ro);
-		} catch (Exception e) {
-			ro.setOspState(500);
-			ro.setValue("msg", "服务器异常，获取用户列表失败！");
-			return JsonUtil.beanToJson(ro);
-		}
+	public void SetMenuAction(ResponseObject ro){
+		ro.setValue("menuActions", request.getAttribute("menuActions"));
 	}
 
 }

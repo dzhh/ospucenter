@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.DelegatingFilterProxy;
 
 import com.osp.ucenter.filter.CrossDomainFilter;
@@ -21,8 +22,25 @@ import com.osp.ucenter.filter.SecurityFilter;
 @SpringBootApplication
 public class UcenterMain {
 
+	
+	
 	public static void main(String[] args) {
 		SpringApplication.run(UcenterMain.class, args);
+	}
+	
+	/**
+	 * 跨域处理Filter(最先执行此过滤器，避免跨域请求调用两次而执行后续的过滤器链)
+	 * 
+	 * @return
+	 */
+	@Bean
+    @Order(Integer.MAX_VALUE)
+	public FilterRegistrationBean crossDomainFilterRegistration() {
+		FilterRegistrationBean registration = new FilterRegistrationBean();
+		registration.setFilter(new CrossDomainFilter());
+		registration.addUrlPatterns("/*");
+		registration.setName("CrossDomainFilter");
+		return registration;
 	}
 
 	/**
@@ -31,28 +49,12 @@ public class UcenterMain {
 	 * @return
 	 */
 	@Bean
+	@Order(Integer.MAX_VALUE-1)
 	public FilterRegistrationBean InitfilterRegistration() {
 		FilterRegistrationBean registration = new FilterRegistrationBean();
 		registration.setFilter(new Initfilter());
 		registration.addUrlPatterns("/no");
 		registration.setName("Initfilter");
-		registration.setOrder(100);
-		return registration;
-	}
-
-	/**
-	 * 跨域处理Filter
-	 * 
-	 * @return
-	 */
-	@Bean
-	public FilterRegistrationBean crossDomainFilterRegistration() {
-		FilterRegistrationBean registration = new FilterRegistrationBean();
-		registration.setFilter(new CrossDomainFilter());
-		registration.addUrlPatterns("/*");
-		// registration.addInitParameter("paramName", "paramValue");
-		registration.setName("CrossDomainFilter");
-		registration.setOrder(103);
 		return registration;
 	}
 
@@ -62,16 +64,14 @@ public class UcenterMain {
 	 * @return
 	 */
 	@Bean
+	@Order(Integer.MAX_VALUE-2)
 	public FilterRegistrationBean securityFilter() {
 		FilterRegistrationBean registration = new FilterRegistrationBean();
 		registration.setFilter(new DelegatingFilterProxy("SecurityFilter"));
 		registration.addInitParameter("targetFilterLifecycle", "true");
 		registration.addUrlPatterns("/*");
-		registration.setOrder(102);
 		return registration;
 	}
-	
-	
 	
 	@Bean(name = "SecurityFilter")
 	public SecurityFilter getSecurityFilter(){

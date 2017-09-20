@@ -13,6 +13,7 @@ public interface UcRoleMapper {
 	int deleteByPrimaryKey(Integer roleId);
 	
 	int findCount();
+	
 	int insert(UcRole record);
 
 	int insertSelective(UcRole record);
@@ -22,8 +23,7 @@ public interface UcRoleMapper {
 	int updateByPrimaryKeySelective(UcRole record);
 
 	int updateByPrimaryKey(UcRole record);
-	
-	
+		
 	List<UcRolePermissionAllocationBo> selectPermissionByRoleIds();
 	
 	List<UcRole> findAllPermissionByUser(Integer userId);

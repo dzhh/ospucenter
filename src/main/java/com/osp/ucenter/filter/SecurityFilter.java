@@ -4,20 +4,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.osp.common.json.JsonUtil;
 import com.osp.ucenter.common.utils.BaseUtils;
+import com.osp.ucenter.jwt.JwtUtil;
 import com.osp.ucenter.persistence.bo.JWTUserBean;
 import com.osp.ucenter.service.UcRoleService;
 import com.osp.ucenter.service.impl.RedisServiceImpl;
@@ -28,7 +26,7 @@ import com.osp.ucenter.service.impl.RedisServiceImpl;
  * @author fly
  *
  */
-public class SecurityFilter implements Filter {
+public class SecurityFilter extends OncePerRequestFilter {
 
 	@Autowired
 	private RedisServiceImpl redisServiceImpl;
@@ -37,12 +35,6 @@ public class SecurityFilter implements Filter {
 	UcRoleService ucRoleService;
 
 	Logger logger = Logger.getLogger(SecurityFilter.class);
-
-	@Override
-	public void destroy() {
-		// TODO Auto-generated method stub
-
-	}
 
 	public static Map<String, Integer> restApp = new HashMap<String, Integer>();
 
@@ -64,45 +56,46 @@ public class SecurityFilter implements Filter {
 	}
 
 	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-			throws IOException, ServletException {
-		HttpServletRequest request = (HttpServletRequest) req;
-		HttpServletResponse response = (HttpServletResponse) resp;
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 		String uri = request.getRequestURI();
+		String osptoken = request.getHeader("token");
 		/**
 		 * 不需要验证的
 		 */
 		if (this.getRestApiValue(uri) == 1) {
-			chain.doFilter(request, response);
+			filterChain.doFilter(request, response);
 			return;
 		}
-		// 1. 检查用户是否已登录 Tocken JWT
-		String osptoken = request.getHeader("token");
-		// 2. 没登录，登录去
-		if (osptoken == null || osptoken.equals("") || redisServiceImpl.isKeyExists(osptoken) == false) {
+		try {
+			// 1. 检查用户是否已登录 Tocken JWT
+			JwtUtil.validateToken(osptoken);
+		} catch (Exception e) {
+			// 2. 没登录，登录去
 			request.getRequestDispatcher("/user/toLogin").forward(request, response);
 			return;
 		}
+		// 3.维护在线用户会话信息
 		Object jwtUser = redisServiceImpl.get(osptoken);
 		JWTUserBean jwtUserBean = JsonUtil.jsonToBean(JsonUtil.beanToJson(jwtUser), JWTUserBean.class);
 		jwtUserBean.setLastActionTime(BaseUtils.getCurrentTime());// 更新会话最后活动时间
 		redisServiceImpl.put(osptoken, jwtUserBean, 3600);
-		// 3. 判断用户是否有访问此资源的权限，并判断此资源属于菜单权限还是操作权限,如果此资源属于菜单权限需要取得此菜单的所有操作权限
+		// 4. 判断用户是否有访问此资源的权限，并判断此资源属于菜单权限还是操作权限,如果此资源属于菜单权限需要取得此菜单的所有操作权限
 		int flag = ucRoleService.hasPermission(jwtUserBean.getUserId(), uri);
 		if (flag == 0) {
 			request.getRequestDispatcher("/user/auth").forward(request, response);
 			return;
 		} else if (flag == 1) {
-			// 4.如果此url是调用菜单接口 ，取得此菜单的所有操作权限
-			request.setAttribute("menuActions", ucRoleService.getActionTrees(jwtUserBean.getUserId(),uri));
+			// 5.如果此url是调用菜单接口 ，取得此菜单的所有操作权限
+			request.setAttribute("menuActions", ucRoleService.getActionTrees(jwtUserBean.getUserId(), uri));
 		}
 		logger.info("=============SecurityFilter dofilter=============");
-		chain.doFilter(request, response);
+		filterChain.doFilter(request, response);
 	}
 
 	@Override
-	public void init(FilterConfig arg0) throws ServletException {
-		logger.info("=============SecurityFilter init=============");
-	}
+	public void destroy() {
+		// TODO Auto-generated method stub
 
+	}
 }

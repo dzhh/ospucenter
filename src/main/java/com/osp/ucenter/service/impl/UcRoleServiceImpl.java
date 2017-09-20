@@ -154,7 +154,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		int flag = 0;
 		List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(userId.toString())), UcRole.class);
 		for (UcRole ucRole : ucRoles) {
-			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(ucRole.getPermissions()), UcPermissionMenuActionBo.class);
 			for (UcPermissionMenuActionBo ucPermissionMenuActionBo : ucPermissionMenuActionBos) {
 				if (ucPermissionMenuActionBo.getMenuUrl() != null
 						&& ucPermissionMenuActionBo.getMenuUrl().equals(uri)) {
@@ -174,20 +174,20 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 	}
 
 	/**
-	 * 组织前台菜单
+	 * 组织前台菜单 json转bean将数据库表字段中Integer类型null值转为了0
 	 */
 	public Set<UcMenu> getMenuTrees(Integer userId) {
 		Set<UcMenu> ucMenus = new LinkedHashSet<UcMenu>();
 		Set<UcMenu> trees = new LinkedHashSet<UcMenu>();
 		List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(userId.toString())), UcRole.class);
-		for (UcRole ucRole : ucRoles) {
-			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
+		for (UcRole ucRole : ucRoles) {	
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(ucRole.getPermissions()), UcPermissionMenuActionBo.class);
 			for (UcPermissionMenuActionBo menuBo : ucPermissionMenuActionBos) {
-				if (menuBo.getMenuId() != null) {
+				if (menuBo.getMenuId() != 0) {
 					UcMenu ucMenu = new UcMenu(menuBo.getMenuId(), menuBo.getMenuName(), menuBo.getMenuUrl(),
 							menuBo.getMenuParent(), menuBo.getMenuIcon());
-					ucMenus.add(ucMenu);
-					if (menuBo.getMenuParent() == null) {
+					ucMenus.add(ucMenu);			
+					if (menuBo.getMenuParent() == 0) {
 						trees.add(ucMenu);
 					}
 				}
@@ -201,7 +201,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 
 	public void organizingMenuTree(UcMenu ucMenu, Set<UcMenu> ucMenus) {
 		for (UcMenu tempMenu : ucMenus) {
-			if (tempMenu.getMenuParent() != null && ucMenu.getMenuId() == tempMenu.getMenuParent()) {
+			if (tempMenu.getMenuParent() != 0 && ucMenu.getMenuId() == tempMenu.getMenuParent()) {
 				ucMenu.getChildren().add(tempMenu);
 				organizingMenuTree(tempMenu, ucMenus);
 			}
@@ -217,13 +217,13 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 		Set<UcAction> trees = new LinkedHashSet<UcAction>();
 		List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(userId.toString())), UcRole.class);
 		for (UcRole ucRole : ucRoles) {
-			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = ucRole.getPermissions();
+			List<UcPermissionMenuActionBo> ucPermissionMenuActionBos = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(ucRole.getPermissions()), UcPermissionMenuActionBo.class);
 			for (UcPermissionMenuActionBo actionBo : ucPermissionMenuActionBos) {
-				if (actionBo.getActionId() != null && actionBo.getActionPreventUrl().equals(menuUrl)) {
+				if (actionBo.getActionId() != 0 && actionBo.getActionPreventUrl().equals(menuUrl)) {
 					UcAction ucAction = new UcAction(actionBo.getActionId(), actionBo.getActionName(),
 							actionBo.getActionCode(), actionBo.getActionParent(), actionBo.getActionPreventUrl());
 					ucActions.add(ucAction);
-					if (actionBo.getActionParent() == null) {
+					if (actionBo.getActionParent() == 0) {
 						trees.add(ucAction);
 					}
 				}
@@ -238,7 +238,7 @@ public class UcRoleServiceImpl extends BaseMybatisDao<UcRoleMapper> implements U
 
 	public void organizingActionTree(UcAction ucAction, Set<UcAction> ucActions) {
 		for (UcAction tempAction : ucActions) {
-			if (tempAction.getActionParent() != null && ucAction.getActionId() == tempAction.getActionParent()) {
+			if (tempAction.getActionParent() != 0 && ucAction.getActionId() == tempAction.getActionParent()) {
 				ucAction.getChildren().add(tempAction);
 				organizingActionTree(tempAction, ucActions);
 			}

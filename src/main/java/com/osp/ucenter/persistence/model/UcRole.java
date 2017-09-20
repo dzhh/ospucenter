@@ -15,8 +15,7 @@ public class UcRole implements Serializable {
 	private String value;// 前台需要
 	private String label;// 前台需要
 	private Integer key;//前台需要
-	// role --> permission 一对多处理
-	private List<UcPermissionMenuActionBo> permissions = new LinkedList<UcPermissionMenuActionBo>();
+	private List<UcPermissionMenuActionBo> permissions = new LinkedList<UcPermissionMenuActionBo>();// role --> permission 一对多处理
 
 	public Integer getRoleId() {
 		return roleId;

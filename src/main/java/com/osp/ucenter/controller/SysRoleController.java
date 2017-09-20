@@ -2,8 +2,9 @@ package com.osp.ucenter.controller;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -37,6 +38,9 @@ public class SysRoleController {
 	UcRoleService ucRoleService;
 	
 	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
 	private MyPermissionRedisServiceImpl myPermissionRedisServiceImpl;
 
 	/**
@@ -51,6 +55,7 @@ public class SysRoleController {
 		try {
 			this.getRoles(pagination, ro);
 			ro.setOspState(200);
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -149,15 +154,14 @@ public class SysRoleController {
 	 * @RequestBody UcUser ucUser List<Map<String, Object>>
 	 * @return
 	 */
-	@RequestMapping(value = "myPermission", method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = "/myPermission", method = { RequestMethod.GET, RequestMethod.POST })
 	@ResponseBody
 	public String getMyPermission(@RequestBody UcUser ucUser) {
 		ResponseObject ro = ResponseObject.getInstance();
 		try {
-			// 查询我所有的角色 ---> 权限
-			List<UcRole> ucRoles = JsonUtil.jsonToBeanList(JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(ucUser.getUserId().toString())), UcRole.class);
 			ro.setOspState(200);
-			ro.setValue("myPermission", ucRoles);
+			ro.setValue("myPermission", JsonUtil.beanListToJson(myPermissionRedisServiceImpl.get(ucUser.getUserId().toString())));
+			this.SetMenuAction(ro);
 			return JsonUtil.beanToJson(ro);
 		} catch (MyRuntimeException e) {
 			ro.setOspState(400);
@@ -171,7 +175,7 @@ public class SysRoleController {
 	}
 
 	/**
-	 * 取得角色别表
+	 * 取得角色列表
 	 * 
 	 * @param pagination
 	 * @param ro
@@ -189,5 +193,13 @@ public class SysRoleController {
 		} catch (Exception e) {
 			throw e;
 		}
+	}
+	
+	/**
+	 * 取得此用户当前菜单的操作权限树
+	 * @param ro
+	 */
+	public void SetMenuAction(ResponseObject ro){
+		ro.setValue("menuActions", request.getAttribute("menuActions"));
 	}
 }
