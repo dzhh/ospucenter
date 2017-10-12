@@ -1,15 +1,20 @@
-package com.osp.ucenter.config;
+package com.osp.ucenter.durid.config;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -21,8 +26,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.druid.support.http.StatViewServlet;
+import com.alibaba.druid.support.http.WebStatFilter;
 import com.alibaba.druid.util.StringUtils;
-import com.osp.ucenter.common.model.DruidDatasource;
+import com.osp.ucenter.durid.model.DruidDatasource;
 
 /**
  * mybatis与druid整合
@@ -88,6 +95,14 @@ public class DatabaseSourceConfig implements EnvironmentAware {
 	    dataSource.setTestWhileIdle(druidDatasource.isTestWhileIdle());
 	    dataSource.setTestOnReturn(druidDatasource.isTestOnReturn());
 	    dataSource.setLogAbandoned(druidDatasource.isLogAbandoned());
+	    
+	    try {
+	    	dataSource.setFilters(druidDatasource.getFilters());
+	    } catch (SQLException e) {
+	    	System.err.println("druid configuration initialization filter: " + e);
+	    }
+	    dataSource.setConnectionProperties(druidDatasource.getConnectionProperties());
+
 		return dataSource;
 	}
 
@@ -96,23 +111,68 @@ public class DatabaseSourceConfig implements EnvironmentAware {
 	 * @return
 	 * @throws Exception
 	 */
-	@Bean
-	@ConditionalOnMissingBean  
-	public SqlSessionFactory sqlSessionFactory() throws Exception {
-		SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
-		sqlSessionFactoryBean.setDataSource(dataSource());
-		PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        sqlSessionFactoryBean.setMapperLocations(resolver
-                .getResources("classpath:com/osp/ucenter/persistence/dao/mapping/*.xml"));
-        sqlSessionFactoryBean.setConfigLocation(resolver.getResource("classpath:mybatis-config.xml"));
-		return sqlSessionFactoryBean.getObject();
-	}
+//	@Bean
+//	@ConditionalOnMissingBean  
+//	public SqlSessionFactory sqlSessionFactory() throws Exception {
+//		SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+//		sqlSessionFactoryBean.setDataSource(dataSource());
+//		PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+//        sqlSessionFactoryBean.setMapperLocations(resolver
+//                .getResources("classpath:com/osp/ucenter/persistence/dao/mapping/*.xml"));
+//        sqlSessionFactoryBean.setConfigLocation(resolver.getResource("classpath:mybatis-config.xml"));
+//		return sqlSessionFactoryBean.getObject();
+//	}
     @Bean
     @ConditionalOnMissingBean  
 	public PlatformTransactionManager platformTransactionManager() throws SQLException {
 		return new DataSourceTransactionManager(dataSource());
 	}
 
+    /**
+     * 注册一个StatViewServlet
+     * @return
+     */
+    @Bean
+	public ServletRegistrationBean druidServlet() {
+		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean();
+		servletRegistrationBean.setServlet(new StatViewServlet());
+		servletRegistrationBean.addUrlMappings("/druid/*");
+		Map<String, String> initParameters = new HashMap<String, String>();
+		 initParameters.put("loginUsername", "druid");// 用户名
+		 initParameters.put("loginPassword", "druid");// 密码
+		initParameters.put("resetEnable", "false");// 禁用HTML页面上的“Reset All”功能
+//		initParameters.put("allow", "127.0.0.1"); // IP白名单 (没有配置或者为空，则允许所有访问)
+		// initParameters.put("deny", "192.168.20.38");// IP黑名单
+		// (存在共同时，deny优先于allow)
+		servletRegistrationBean.setInitParameters(initParameters);
+		return servletRegistrationBean;
+	}
+
+    /**
+     * 注册一个：filterRegistrationBean
+     * @return
+     */
+	@Bean
+	public FilterRegistrationBean filterRegistrationBean() {
+		FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
+		filterRegistrationBean.setFilter(new WebStatFilter());
+		filterRegistrationBean.addUrlPatterns("/*");
+		filterRegistrationBean.addInitParameter("exclusions", "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*");
+		return filterRegistrationBean;
+	}
+
+//	@Bean
+//	public BeanNameAutoProxyCreator beanNameAutoProxyCreator() {
+//		BeanNameAutoProxyCreator beanNameAutoProxyCreator = new BeanNameAutoProxyCreator();
+//		beanNameAutoProxyCreator.setProxyTargetClass(true);
+//		// 设置要监控的bean的id
+//		//beanNameAutoProxyCreator.setBeanNames("sysRoleMapper","loginController");
+//		beanNameAutoProxyCreator.setInterceptorNames("druid-stat-interceptor");
+//		return beanNameAutoProxyCreator;
+//	}
+    
+    
+    
 	public DruidDatasource getDruidDatasource() {
 		return druidDatasource;
 	}

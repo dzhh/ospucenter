@@ -26,5 +26,17 @@ public interface UcRoleMapper {
 		
 	List<UcRolePermissionAllocationBo> selectPermissionByRoleIds();
 	
+	/**
+	 * 根据用户ID 获取用户的所有权限
+	 * @param userId
+	 * @return
+	 */
 	List<UcRole> findAllPermissionByUser(Integer userId);
+	
+	/**
+	 * 获取所有权限
+	 * @return
+	 */
+	List<UcRole> findAllPermission();
+
 }

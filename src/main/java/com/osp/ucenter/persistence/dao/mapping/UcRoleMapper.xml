@@ -54,6 +54,13 @@
 		left join uc_menu m on m.menu_id = p.Menu_id
 	        left join uc_action a on a.Action_Id = p.Action_id
   </select>
+    <!-- 所有权限 -->
+   <select id="findAllPermission" parameterType="java.lang.Integer" resultMap="findAllPermissionByUser_resultMap">
+	SELECT * from ( SELECT * from uc_role, uc_role_permission WHERE uc_role.role_id = uc_role_permission.roleid ) uur
+	LEFT JOIN uc_permission ON uur.permission = uc_permission.Permission_id
+	LEFT JOIN uc_menu ON uc_permission.Menu_id = uc_menu.menu_id
+  </select>
+  
   <!-- 权限分配页面数据展示 -->
   <select id="selectPermissionByRoleIds" resultType="com.osp.ucenter.persistence.bo.UcRolePermissionAllocationBo">
   	select ur.role_id roleId,ur.role_Name roleName,group_concat(m.menu_name) menuNames,group_concat(a.action_Name) actionNames,group_concat(p.Permission_id) permissionIds from 

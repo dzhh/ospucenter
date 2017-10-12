@@ -1,4 +1,4 @@
-package com.osp.ucenter.common.model;
+package com.osp.ucenter.durid.model;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -31,6 +31,9 @@ public class DruidDatasource {
 	private boolean testOnBorrow;
 	private boolean testOnReturn;
 	private boolean logAbandoned;
+	
+	private String connectionProperties;
+	private String filters;
 
 	public int getInitialSize() {
 		return initialSize;
@@ -166,6 +169,26 @@ public class DruidDatasource {
 
 	public void setLogAbandoned(boolean logAbandoned) {
 		this.logAbandoned = logAbandoned;
+	}
+
+	public String getConnectionProperties() {
+		return connectionProperties;
+	}
+
+	public void setConnectionProperties(String connectionProperties) {
+		this.connectionProperties = connectionProperties;
+	}
+
+	public String getFilters() {
+		return filters;
+	}
+
+	public void setFilters(String filters) {
+		this.filters = filters;
+	}
+
+	public void setRemoveAbandoned(boolean removeAbandoned) {
+		this.removeAbandoned = removeAbandoned;
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.osp.ucenter.config;
+package com.osp.ucenter.durid.config;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Configuration;

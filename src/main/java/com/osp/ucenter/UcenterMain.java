@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.DelegatingFilterProxy;
@@ -20,6 +21,7 @@ import com.osp.ucenter.filter.SecurityFilter;
  */
 @EnableAutoConfiguration
 @SpringBootApplication
+//@EnableDiscoveryClient
 public class UcenterMain {
 
 	

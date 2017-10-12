@@ -1,13 +1,25 @@
 package com.osp.ucenter.persistence.model;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
+
+/**
+ * 
+ * @author fly
+ *
+ */
 public class UcUser implements Serializable {
+	
+	public UcUser() {
+		super();
+	}
+	
 	/**
-	 * 
+	 *  
 	 */
 	private static final long serialVersionUID = 1L;
-
 	private Integer userId;
 	private String userName;
 	private String userPwd;
@@ -18,6 +30,8 @@ public class UcUser implements Serializable {
 	private String newPwd;
 	private Integer status;
 	private Integer key;//前台需要
+	private boolean enabled;  
+	
 
 	public void setNewPwd(String newPwd) {
 		this.newPwd = newPwd == null ? null : newPwd.trim();
@@ -214,7 +228,14 @@ public class UcUser implements Serializable {
 		return key;
 	}
 
+
 	public void setKey(Integer key) {
 		this.key = key;
 	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	
 }
