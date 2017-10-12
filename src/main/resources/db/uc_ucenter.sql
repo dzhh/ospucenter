@@ -164,7 +164,7 @@ CREATE TABLE `uc_user` (
 -- ----------------------------
 -- Records of uc_user
 -- ----------------------------
-INSERT INTO `uc_user` VALUES ('1', 'zmcheng', '123456', null, null, null, null, '1');
+INSERT INTO `uc_user` VALUES ('1', 'zmcheng', 'a0c7fa7f8953766a135ea69ca41c54c6', null, null, null, null, '1');
 INSERT INTO `uc_user` VALUES ('2', 'lisi', '123456', null, null, null, null, '1');
 INSERT INTO `uc_user` VALUES ('3', 'wangwu', '123456', null, null, null, null, '1');
 INSERT INTO `uc_user` VALUES ('5', 'dddd', '123', null, null, null, null, '1');
